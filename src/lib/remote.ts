@@ -175,7 +175,7 @@ export const remoteAdapter = {
     if (opts.projectId) query = query.eq('project_id', opts.projectId);
     if (opts.status) query = query.eq('status', opts.status);
 
-    // Ruang Pribadi. Aman secara bawaan: kalau pemanggil tidak menyebut apa pun,
+    // Secret. Aman secara bawaan: kalau pemanggil tidak menyebut apa pun,
     // data yang disembunyikan TIDAK ikut terdaftar.
     if (isHideable(resource)) {
       if (opts.hiddenOnly) query = query.eq('hidden', true);
@@ -249,7 +249,7 @@ export const remoteAdapter = {
       .select('*', { count: 'exact', head: true })
       .eq('user_id', session.userId)
       .eq('archived', opts.archived ?? false);
-    // Statistik juga tidak boleh menghitung isi Ruang Pribadi.
+    // Statistik juga tidak boleh menghitung isi Secret.
     if (isHideable(resource)) query = query.eq('hidden', false);
     const result = await query;
     if (result.error) return 0;

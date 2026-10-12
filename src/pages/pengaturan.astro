@@ -48,10 +48,11 @@ import { icon } from '../lib/ui';
     </section>
 
     <section class="card">
-      <h2 class="section-title" style="margin-bottom:5px">Vault Password</h2>
+      <h2 class="section-title" style="margin-bottom:5px">Vault Password &amp; Master Password</h2>
       <p class="page-sub" style="margin-bottom:13px">
-        Tempat password akunmu disimpan. Isinya dienkripsi di browser sebelum disimpan, jadi tidak ada yang bisa
-        membacanya tanpa master password — termasuk server.
+        Master password di bawah ini punya dua fungsi: membuka <strong>password akun</strong> yang tersimpan
+        (terenkripsi AES-GCM 256), dan membuka menu <strong>Secret</strong> berisi project serta prompt rahasia.
+        Master password tidak pernah dikirim ke server dan tidak bisa dipulihkan.
       </p>
       <div id="settings-vault"></div>
     </section>

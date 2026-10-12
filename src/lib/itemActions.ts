@@ -49,7 +49,7 @@ export async function openFormModal(
     /**
      * Nilai yang selalu ditambahkan saat MEMBUAT data baru, tapi tidak
      * ditampilkan sebagai kolom di form. Dipakai untuk `hidden: true` supaya
-     * item baru langsung masuk Ruang Pribadi.
+     * item baru langsung masuk Secret.
      */
     createDefaults?: Record<string, unknown>;
   },
@@ -616,14 +616,14 @@ export async function handleItemAction(
       }
       return;
 
-    /* -------------------------------------------------- ruang pribadi */
+    /* -------------------------------------------------- secret */
     case 'hide': {
       const isProject = resource === 'projects';
       const confirmed = await confirmDialog({
-        title: 'Pindahkan ke Ruang Pribadi?',
+        title: 'Pindahkan ke Secret?',
         message: isProject
-          ? 'Project ini beserta seluruh prompt di dalamnya akan disembunyikan dari semua daftar, pencarian, dan statistik. Untuk membukanya lagi, gunakan Ruang Pribadi.'
-          : 'Item ini akan disembunyikan dari semua daftar, pencarian, dan statistik. Untuk membukanya lagi, gunakan Ruang Pribadi.',
+          ? 'Project ini beserta seluruh prompt di dalamnya akan disembunyikan dari semua daftar, pencarian, dan statistik. Untuk membukanya lagi, gunakan Secret.'
+          : 'Item ini akan disembunyikan dari semua daftar, pencarian, dan statistik. Untuk membukanya lagi, gunakan Secret.',
         confirmLabel: 'Sembunyikan',
       });
       if (!confirmed) return;
@@ -643,8 +643,8 @@ export async function handleItemAction(
         await db.log('hide', def.tagType, id, label);
         toast(
           cascade > 0
-            ? `Disembunyikan ke Ruang Pribadi, termasuk ${cascade} prompt di dalamnya.`
-            : 'Disembunyikan ke Ruang Pribadi.',
+            ? `Disembunyikan ke Secret, termasuk ${cascade} prompt di dalamnya.`
+            : 'Disembunyikan ke Secret.',
         );
         await context.onChanged();
       } catch (error) {
@@ -668,12 +668,12 @@ export async function handleItemAction(
         await db.log('unhide', def.tagType, id, label);
         toast(
           cascade > 0
-            ? `Dikeluarkan dari Ruang Pribadi, termasuk ${cascade} prompt di dalamnya.`
-            : 'Dikeluarkan dari Ruang Pribadi.',
+            ? `Dikeluarkan dari Secret, termasuk ${cascade} prompt di dalamnya.`
+            : 'Dikeluarkan dari Secret.',
         );
         await context.onChanged();
       } catch (error) {
-        showError(error, 'Gagal mengeluarkan data dari Ruang Pribadi.');
+        showError(error, 'Gagal mengeluarkan data dari Secret.');
       }
       return;
     }

@@ -135,37 +135,6 @@ function initVaultIdleWatch(): void {
   }, 60_000);
 }
 
-/**
- * Pintu masuk Ruang Pribadi.
- *
- * Halaman itu sengaja tidak ditautkan di navigasi mana pun. Dua cara membukanya:
- * mengetik alamatnya langsung, atau mengetuk tulisan "PERSONAL OS" di sidebar
- * lima kali berturut-turut. Tidak ada petunjuk visual apa pun — kalau ada,
- * orang lain yang memegang perangkat ini jadi tahu harus ke mana.
- */
-function initPrivateDoor(): void {
-  const brand = document.querySelector<HTMLElement>('.brand');
-  if (!brand) return;
-
-  let taps = 0;
-  let resetTimer = 0;
-
-  brand.addEventListener('click', () => {
-    taps += 1;
-    window.clearTimeout(resetTimer);
-
-    if (taps >= 5) {
-      taps = 0;
-      window.location.assign('/pribadi');
-      return;
-    }
-    // Jeda lebih dari 1,5 detik dianggap mulai dari awal lagi.
-    resetTimer = window.setTimeout(() => {
-      taps = 0;
-    }, 1500);
-  });
-}
-
 /* ------------------------------------------------------ command palette */
 
 interface PaletteItem {
@@ -410,7 +379,6 @@ export function initShell(): void {
   initPalette();
   initFormShortcuts();
   initVaultIdleWatch();
-  initPrivateDoor();
   bindCopyButtons();
   void initIdentity();
 

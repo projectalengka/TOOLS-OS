@@ -1,5 +1,5 @@
 /**
- * Ruang Pribadi.
+ * Secret.
  *
  * Halaman yang tidak ada di navigasi mana pun dan hanya bisa dibuka dengan
  * master password. Isinya: project dan prompt yang disembunyikan.
@@ -39,7 +39,7 @@ function rowTitle(resource: ResourceName, row: Row): string {
   return resource === 'projects' ? text(row.name) : text(row.title);
 }
 
-/** Pencarian lokal, hanya di antara isi Ruang Pribadi. */
+/** Pencarian lokal, hanya di antara isi Secret. */
 function visibleRows(): Row[] {
   const term = search.trim().toLowerCase();
   if (!term) return items;
@@ -86,7 +86,7 @@ async function render(): Promise<void> {
     list.innerHTML = search.trim()
       ? emptyState({
           iconName: 'search',
-          title: 'Tidak ada hasil di Ruang Pribadi.',
+          title: 'Tidak ada hasil di Secret.',
           body: 'Coba kata kunci lain.',
         })
       : emptyState({
@@ -127,12 +127,12 @@ async function reload(): Promise<void> {
   try {
     await render();
   } catch (error) {
-    showError(error, 'Gagal memuat isi Ruang Pribadi.');
+    showError(error, 'Gagal memuat isi Secret.');
   }
 }
 
 async function createHere(): Promise<void> {
-  // Item baru langsung masuk Ruang Pribadi.
+  // Item baru langsung masuk Secret.
   await openFormModal(activeTab, {
     projects,
     createDefaults: { hidden: true },
@@ -188,7 +188,7 @@ export async function initPrivatePage(): Promise<void> {
 
     document.getElementById('pv-lock')?.addEventListener('click', () => {
       lock();
-      toast('Ruang Pribadi dikunci.', 'info');
+      toast('Secret dikunci.', 'info');
       window.location.assign('/');
     });
 

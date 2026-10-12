@@ -36,7 +36,7 @@ export interface Project extends BaseRow {
   description: string;
   status: ProjectStatus;
   color: string;
-  /** Disembunyikan dari tampilan normal; hanya muncul di Ruang Pribadi. */
+  /** Disembunyikan dari tampilan normal; hanya muncul di Secret. */
   hidden: boolean;
 }
 
@@ -49,7 +49,7 @@ export interface Prompt extends BaseRow {
   category: PromptCategory;
   ai_model: string;
   variables: string;
-  /** Disembunyikan dari tampilan normal; hanya muncul di Ruang Pribadi. */
+  /** Disembunyikan dari tampilan normal; hanya muncul di Secret. */
   hidden: boolean;
 }
 
@@ -223,15 +223,15 @@ export interface ListOptions {
   ascending?: boolean;
   limit?: number;
   /**
-   * Data yang disembunyikan (Ruang Pribadi) tidak ikut terdaftar secara default.
+   * Data yang disembunyikan (Secret) tidak ikut terdaftar secara default.
    * Sengaja begitu supaya aman: halaman biasa tidak perlu ingat memfilternya.
    */
   includeHidden?: boolean;
-  /** Hanya ambil yang disembunyikan — dipakai halaman Ruang Pribadi. */
+  /** Hanya ambil yang disembunyikan — dipakai halaman Secret. */
   hiddenOnly?: boolean;
 }
 
-/** Resource yang punya kolom `hidden` (Ruang Pribadi). */
+/** Resource yang punya kolom `hidden` (Secret). */
 export const HIDEABLE_RESOURCES = ['projects', 'prompts'] as const;
 
 export function isHideable(resource: string): boolean {

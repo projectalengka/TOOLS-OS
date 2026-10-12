@@ -322,7 +322,7 @@ export const localAdapter = {
     if (opts.projectId) rows = rows.filter((r) => str(r.project_id) === opts.projectId);
     if (opts.status) rows = rows.filter((r) => str(r.status) === opts.status);
 
-    // Ruang Pribadi. Perilakunya harus sama dengan adapter Supabase: data yang
+    // Secret. Perilakunya harus sama dengan adapter Supabase: data yang
     // disembunyikan tidak ikut terdaftar kecuali diminta secara eksplisit.
     if (isHideable(resource)) {
       if (opts.hiddenOnly) rows = rows.filter((r) => bool(r.hidden));
@@ -452,7 +452,7 @@ export const localAdapter = {
     const hits: SearchHit[] = [];
     for (const resource of CONTENT_RESOURCES) {
       for (const row of coll(db, resource)) {
-        // Isi Ruang Pribadi tidak boleh muncul di pencarian biasa.
+        // Isi Secret tidak boleh muncul di pencarian biasa.
         if (isHideable(resource) && bool(row.hidden) && !opts.includeHidden) continue;
         if (matchesSearch(row, resource, term)) hits.push(searchHit(resource, row, term));
       }

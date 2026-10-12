@@ -140,7 +140,7 @@ function actionsFor(resource: ResourceName, row: Row, archived: boolean): string
     );
   }
 
-  // Ruang Pribadi: pindahkan masuk atau keluar dari daftar tersembunyi.
+  // Secret: pindahkan masuk atau keluar dari daftar tersembunyi.
   if (isHideable(resource)) {
     parts.push(
       row.hidden
