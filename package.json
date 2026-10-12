@@ -1,0 +1,26 @@
+{
+  "name": "personal-os",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PERSONAL OS - meja kerja digital pribadi. Astro + TypeScript + Tailwind CSS + Supabase.",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "check:types": "tsc --noEmit -p tsconfig.check.json",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.4",
+    "astro": "^5.1.1"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@tailwindcss/vite": "^4.0.0",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.7.2"
+  }
+}

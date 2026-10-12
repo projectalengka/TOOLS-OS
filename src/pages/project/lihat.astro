@@ -1,0 +1,16 @@
+---
+import AppLayout from '../../layouts/AppLayout.astro';
+---
+
+<AppLayout title="Detail Project" description="Isi satu project: prompt, dokumen, catatan, link, tugas, snippet, dan accounts.">
+  <div class="page">
+    <div id="pd-head"></div>
+    <div class="tabs" id="pd-tabs"></div>
+    <div id="pd-body"></div>
+  </div>
+
+  <script>
+    import { initProjectDetailPage } from '../../lib/pages/project-detail';
+    void initProjectDetailPage();
+  </script>
+</AppLayout>

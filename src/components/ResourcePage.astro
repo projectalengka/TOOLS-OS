@@ -1,0 +1,86 @@
+---
+/**
+ * Kerangka halaman untuk semua resource berbasis daftar.
+ * Judul, deskripsi, dan pilihan filter dirender saat build agar halaman
+ * langsung tampil tanpa menunggu JavaScript.
+ */
+import { RESOURCES, label } from '../lib/resources';
+import { icon } from '../lib/ui';
+import type { ResourceName } from '../lib/types';
+
+interface Props {
+  resource: ResourceName;
+}
+
+const { resource } = Astro.props;
+const def = RESOURCES[resource];
+const categoryField = def.fields.find((field) => field.name === def.categoryField);
+const newLabel = resource === 'documents' ? 'Unggah Dokumen' : `${def.singular} Baru`;
+const newIcon = resource === 'documents' ? 'upload' : 'plus';
+---
+
+<div class="page" id="resource-page" data-resource={resource}>
+  <header class="page-head">
+    <div>
+      <h1 class="page-title">{def.title}</h1>
+      <p class="page-sub">{def.subtitle}</p>
+    </div>
+    <div class="page-actions">
+      <button type="button" class="btn btn-primary" id="rp-new" data-action="new">
+        <Fragment set:html={icon(newIcon, 16)} />
+        <span>{newLabel}</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <div class="toolbar-search">
+      <Fragment set:html={icon('search', 16)} />
+      <input
+        type="search"
+        class="input"
+        id="rp-search"
+        placeholder={def.searchPlaceholder}
+        aria-label={def.searchPlaceholder}
+        autocomplete="off"
+      />
+    </div>
+
+    {categoryField?.options && (
+      <select class="select" id="rp-category" aria-label="Filter kategori">
+        <option value="">Semua kategori</option>
+        {categoryField.options.map((option) => <option value={option}>{label(option)}</option>)}
+      </select>
+    )}
+
+    {def.hasProject && (
+      <select class="select" id="rp-project" aria-label="Filter project">
+        <option value="">Semua project</option>
+      </select>
+    )}
+
+    {def.hasTags && (
+      <select class="select" id="rp-tag" aria-label="Filter tag">
+        <option value="">Semua tag</option>
+      </select>
+    )}
+
+    <div class="segmented" id="rp-scope" role="group" aria-label="Filter status">
+      <button type="button" data-scope="active" class="is-active">Semua</button>
+      <button type="button" data-scope="favorite">Favorit</button>
+      <button type="button" data-scope="archived">Arsip</button>
+    </div>
+  </div>
+
+  <p class="page-sub" id="rp-count" aria-live="polite"></p>
+
+  <div id="rp-list"></div>
+</div>
+
+<script>
+  import { initResourcePage } from '../lib/pages/resource-page';
+
+  const root = document.getElementById('resource-page');
+  const resource = root?.dataset.resource;
+  if (resource) void initResourcePage(resource as never);
+</script>

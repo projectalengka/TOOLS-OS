@@ -1,0 +1,33 @@
+---
+import AppLayout from '../layouts/AppLayout.astro';
+import { icon } from '../lib/ui';
+---
+
+<AppLayout title="Arsip" description="Data yang diarsipkan. Tidak dihapus, tetap bisa dicari.">
+  <div class="page" id="collection-page">
+    <header class="page-head">
+      <div>
+        <h1 class="page-title">Arsip</h1>
+        <p class="page-sub">
+          Data yang diarsipkan tidak muncul di daftar normal, tetapi tetap bisa dicari dan dipulihkan kapan saja.
+        </p>
+      </div>
+    </header>
+
+    <div class="banner">
+      <Fragment set:html={icon('archive', 16)} />
+      <span>
+        Arsipkan adalah cara aman untuk menyisihkan data. <strong>Hapus permanen</strong> hanya dilakukan kalau kamu
+        benar-benar yakin, dan selalu meminta konfirmasi.
+      </span>
+    </div>
+
+    <div class="tabs" id="collection-tabs"></div>
+    <div id="collection-body"></div>
+  </div>
+
+  <script>
+    import { initCollectionPage } from '../lib/pages/collection';
+    void initCollectionPage('archived');
+  </script>
+</AppLayout>

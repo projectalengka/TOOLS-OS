@@ -1,0 +1,38 @@
+---
+import AppLayout from '../layouts/AppLayout.astro';
+import { icon } from '../lib/ui';
+---
+
+<AppLayout title="Cari" description="Pencarian global di seluruh data PERSONAL OS.">
+  <div class="page" id="search-page">
+    <header class="page-head">
+      <div>
+        <h1 class="page-title">Cari</h1>
+        <p class="page-sub">
+          Mencari di judul dan isi seluruh data: project, prompt, dokumen, catatan, link, accounts, tugas, dan snippet.
+        </p>
+      </div>
+    </header>
+
+    <div class="toolbar-search" style="max-width: 640px">
+      <Fragment set:html={icon('search', 16)} />
+      <input
+        type="search"
+        class="input"
+        id="search-input"
+        placeholder="Cari semua data…"
+        aria-label="Cari semua data"
+        autocomplete="off"
+      />
+    </div>
+
+    <div id="search-filters"></div>
+    <p class="page-sub" id="search-summary" aria-live="polite"></p>
+    <div id="search-results"></div>
+  </div>
+
+  <script>
+    import { initSearchPage } from '../lib/pages/search';
+    void initSearchPage();
+  </script>
+</AppLayout>

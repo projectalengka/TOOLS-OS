@@ -1,0 +1,22 @@
+---
+import AppLayout from '../layouts/AppLayout.astro';
+---
+
+<AppLayout title="Favorit" description="Semua item yang kamu tandai sebagai favorit.">
+  <div class="page" id="collection-page">
+    <header class="page-head">
+      <div>
+        <h1 class="page-title">Favorit</h1>
+        <p class="page-sub">Semua data yang kamu tandai dengan bintang, dari seluruh jenis data.</p>
+      </div>
+    </header>
+
+    <div class="tabs" id="collection-tabs"></div>
+    <div id="collection-body"></div>
+  </div>
+
+  <script>
+    import { initCollectionPage } from '../lib/pages/collection';
+    void initCollectionPage('favorite');
+  </script>
+</AppLayout>

@@ -1,0 +1,32 @@
+---
+/** Bar atas: tombol menu (mobile), pemicu pencarian, dan tombol tema. */
+import { icon } from '../lib/ui';
+---
+
+<header class="topbar">
+  <button
+    type="button"
+    class="icon-button only-mobile"
+    id="menu-button"
+    aria-label="Buka menu navigasi"
+    aria-controls="sidebar"
+    aria-expanded="false"
+  >
+    <Fragment set:html={icon('menu', 20)} />
+  </button>
+
+  <button type="button" class="search-trigger" id="search-trigger" aria-label="Buka Command Palette">
+    <Fragment set:html={icon('search', 17)} />
+    <span>Cari semua data…</span>
+    <kbd class="kbd">Ctrl K</kbd>
+  </button>
+
+  <div class="topbar-actions">
+    <button type="button" class="icon-button" id="theme-toggle" aria-label="Ganti tampilan" title="Ganti tampilan">
+      <Fragment set:html={icon('sun', 18)} />
+    </button>
+    <a class="icon-button only-desktop" href="/pengaturan" aria-label="Pengaturan" title="Pengaturan">
+      <Fragment set:html={icon('settings', 18)} />
+    </a>
+  </div>
+</header>

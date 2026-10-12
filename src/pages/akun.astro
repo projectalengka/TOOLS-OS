@@ -1,0 +1,19 @@
+---
+import AppLayout from '../layouts/AppLayout.astro';
+import ResourcePage from '../components/ResourcePage.astro';
+import { icon } from '../lib/ui';
+---
+
+<AppLayout title="Accounts" description="Semua email dan akun, dengan password yang terenkripsi.">
+  <div class="vault-banner" style="margin-bottom: 20px">
+    <Fragment set:html={icon('vault', 16)} />
+    <span>
+      <strong>Password kamu terenkripsi.</strong> Saat kamu menyimpan password, isinya diacak di browser ini dengan
+      <strong>AES-GCM 256</strong> sebelum dikirim. Kuncinya berasal dari master password yang hanya kamu tahu, jadi
+      tidak ada yang bisa membacanya tanpa itu. Klik tombol <strong>Password</strong> pada kartu account untuk
+      melihat atau menyalinnya.
+    </span>
+  </div>
+
+  <ResourcePage resource="accounts" />
+</AppLayout>

@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.astro/
+.env
+.env.local
+.env.production
+.DS_Store
+*.log
+.vercel
+
+# Catatan kerja asisten (bukan bagian dari aplikasi)
+.workbuddy-ai/

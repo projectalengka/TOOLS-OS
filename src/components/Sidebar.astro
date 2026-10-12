@@ -1,0 +1,101 @@
+---
+/**
+ * Sidebar desktop. Di layar kecil sidebar ini bergeser keluar dan dipanggil
+ * lewat tombol menu (lihat src/lib/shell.ts).
+ */
+import { icon } from '../lib/ui';
+
+const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
+
+interface NavLink {
+  href: string;
+  label: string;
+  iconName: string;
+}
+
+const groups: { title: string; links: NavLink[] }[] = [
+  {
+    title: '',
+    links: [
+      { href: '/', label: 'Dashboard', iconName: 'dashboard' },
+      { href: '/cari', label: 'Cari', iconName: 'search' },
+    ],
+  },
+  {
+    title: 'Workspace',
+    links: [
+      { href: '/project', label: 'Project', iconName: 'folder' },
+      { href: '/tugas', label: 'Tugas', iconName: 'check' },
+    ],
+  },
+  {
+    title: 'Knowledge',
+    links: [
+      { href: '/prompt', label: 'Prompt', iconName: 'sparkles' },
+      { href: '/dokumen', label: 'Dokumen', iconName: 'file' },
+      { href: '/catatan', label: 'Catatan', iconName: 'note' },
+      { href: '/link', label: 'Link', iconName: 'link' },
+      { href: '/snippet', label: 'Snippet', iconName: 'code' },
+    ],
+  },
+  {
+    title: 'Accounts',
+    links: [{ href: '/akun', label: 'Accounts', iconName: 'shield' }],
+  },
+  {
+    title: 'Sistem',
+    links: [
+      { href: '/favorit', label: 'Favorit', iconName: 'star' },
+      { href: '/arsip', label: 'Arsip', iconName: 'archive' },
+      { href: '/pengaturan', label: 'Pengaturan', iconName: 'settings' },
+    ],
+  },
+];
+
+function isActive(href: string): boolean {
+  if (href === '/') return path === '/';
+  if (href === '/project') return path === '/project' || path.startsWith('/project/');
+  return path === href;
+}
+---
+
+<aside class="sidebar" id="sidebar" aria-label="Navigasi utama">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true">✦</span>
+    <span class="brand-name">PERSONAL OS</span>
+    <span class="brand-mode" id="mode-badge" title="Mode penyimpanan">…</span>
+  </div>
+
+  <nav class="nav">
+    {
+      groups.map((group) => (
+        <>
+          {group.title && <p class="nav-group">{group.title}</p>}
+          {group.links.map((link) => (
+            <a class:list={['nav-item', { 'is-active': isActive(link.href) }]} href={link.href}>
+              <Fragment set:html={icon(link.iconName, 18)} />
+              <span>{link.label}</span>
+              {link.href === '/cari' && <kbd class="kbd">Ctrl K</kbd>}
+            </a>
+          ))}
+        </>
+      ))
+    }
+  </nav>
+
+  <div class="sidebar-foot">
+    <div class="user-card">
+      <div class="avatar" id="user-avatar">·</div>
+      <div class="user-meta">
+        <div class="user-name" id="user-name">Memuat…</div>
+        <div class="user-email" id="user-email"></div>
+      </div>
+    </div>
+    <button type="button" class="nav-item" id="sign-out">
+      <Fragment set:html={icon('lock', 18)} />
+      <span>Keluar</span>
+    </button>
+  </div>
+</aside>
+
+<div class="sidebar-scrim" id="sidebar-scrim" aria-hidden="true"></div>

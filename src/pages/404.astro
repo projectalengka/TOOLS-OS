@@ -1,0 +1,24 @@
+---
+import AppLayout from '../layouts/AppLayout.astro';
+import { emptyState } from '../lib/ui';
+---
+
+<AppLayout title="Halaman tidak ditemukan">
+  <div class="page">
+    <div set:html={emptyState({
+      iconName: 'search',
+      title: 'Halaman tidak ditemukan.',
+      body: 'Alamat yang kamu buka tidak ada. Mungkin sudah dipindahkan atau salah ketik.',
+      actionLabel: 'Kembali ke Dashboard',
+      actionAttr: 'data-go-home',
+    })} />
+  </div>
+
+  <script>
+    document.getElementById('content')?.addEventListener('click', (event) => {
+      if ((event.target as HTMLElement).closest('[data-go-home]')) {
+        window.location.assign('/');
+      }
+    });
+  </script>
+</AppLayout>

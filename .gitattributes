@@ -1,0 +1,20 @@
+# Normalisasi akhir baris.
+#
+# Repo ini dikembangkan di Windows tetapi di-build di Linux (Vercel).
+# Tanpa aturan ini, Git mengubah LF menjadi CRLF saat checkout di Windows,
+# lalu seluruh berkas terlihat "berubah" di setiap commit.
+* text=auto eol=lf
+
+# Berkas biner tidak boleh disentuh.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.pdf binary
+
+# Berkas lock sebaiknya dibiarkan apa adanya.
+package-lock.json -diff

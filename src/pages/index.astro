@@ -1,0 +1,72 @@
+---
+import AppLayout from '../layouts/AppLayout.astro';
+import { icon } from '../lib/ui';
+---
+
+<AppLayout title="Dashboard" description="Meja kerja digital pribadi: cari, tambah, dan kelola semua data penting.">
+  <div class="page" id="dashboard">
+    <header class="page-head">
+      <div>
+        <h1 class="page-title">Selamat datang kembali<span id="dash-name"></span>.</h1>
+        <p class="page-sub">Semua data penting kamu ada di satu tempat. Mulai dengan mencari, atau tambahkan data baru.</p>
+      </div>
+    </header>
+
+    <div id="dash-banner" class="banner" hidden>
+      <Fragment set:html={icon('database', 16)} />
+      <span>
+        <strong>Mode Lokal aktif.</strong> Data disimpan di perangkat ini (localStorage + IndexedDB). Untuk memakai
+        Supabase, isi <code>PUBLIC_SUPABASE_URL</code> dan <code>PUBLIC_SUPABASE_ANON_KEY</code> lalu muat ulang.
+        Lihat <a href="/pengaturan">Pengaturan</a>.
+      </span>
+    </div>
+
+    <div class="toolbar-search" style="max-width: 560px">
+      <Fragment set:html={icon('search', 16)} />
+      <input
+        type="search"
+        class="input"
+        id="dash-search"
+        placeholder="Cari semua data…"
+        aria-label="Cari semua data"
+        autocomplete="off"
+      />
+    </div>
+    <div class="panel" id="dash-search-results" hidden></div>
+
+    <section class="section">
+      <div class="stat-grid" id="dash-stats">
+        <div class="skeleton-card"><div class="skeleton-line w-60"></div><div class="skeleton-line w-40"></div></div>
+        <div class="skeleton-card"><div class="skeleton-line w-60"></div><div class="skeleton-line w-40"></div></div>
+        <div class="skeleton-card"><div class="skeleton-line w-60"></div><div class="skeleton-line w-40"></div></div>
+        <div class="skeleton-card"><div class="skeleton-line w-60"></div><div class="skeleton-line w-40"></div></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2 class="section-title">Baru Diperbarui</h2>
+        <a class="section-link" href="/cari">Lihat semua</a>
+      </div>
+      <div class="panel" id="dash-recent"></div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2 class="section-title">Favorit</h2>
+        <a class="section-link" href="/favorit">Lihat semua</a>
+      </div>
+      <div class="panel" id="dash-favorites"></div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">Aksi Cepat</h2>
+      <div class="page-actions" id="dash-quick"></div>
+    </section>
+  </div>
+
+  <script>
+    import { initDashboardPage } from '../lib/pages/dashboard';
+    void initDashboardPage();
+  </script>
+</AppLayout>

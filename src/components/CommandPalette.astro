@@ -1,0 +1,28 @@
+---
+/** Command Palette (Ctrl + K): pencarian global dan aksi cepat. */
+import { icon } from '../lib/ui';
+---
+
+<div class="palette-overlay" id="palette" hidden>
+  <div class="palette" role="dialog" aria-modal="true" aria-label="Command Palette">
+    <div class="palette-head">
+      <Fragment set:html={icon('search', 18)} />
+      <input
+        type="text"
+        class="palette-input"
+        id="palette-input"
+        placeholder="Cari semua data, atau ketik aksi…"
+        autocomplete="off"
+        spellcheck="false"
+        aria-label="Cari semua data"
+      />
+      <kbd class="kbd">Esc</kbd>
+    </div>
+    <div class="palette-list" id="palette-list" role="listbox" aria-label="Hasil"></div>
+    <div class="palette-foot">
+      <span>↑ ↓ pilih</span>
+      <span>Enter buka</span>
+      <span>Esc tutup</span>
+    </div>
+  </div>
+</div>

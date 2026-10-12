@@ -1,0 +1,126 @@
+---
+import AppLayout from '../layouts/AppLayout.astro';
+import { icon } from '../lib/ui';
+---
+
+<AppLayout title="Pengaturan" description="Profil, tampilan, keamanan, dan backup data PERSONAL OS.">
+  <div class="page" id="settings-page">
+    <header class="page-head">
+      <div>
+        <h1 class="page-title">Pengaturan</h1>
+        <p class="page-sub">Atur profil, tampilan, keamanan, dan backup data kamu.</p>
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="section-head" style="margin-bottom:10px">
+        <h2 class="section-title">Mode Penyimpanan</h2>
+        <span class="badge" id="settings-mode">…</span>
+      </div>
+      <p class="page-sub" id="settings-mode-note"></p>
+    </section>
+
+    <section class="card">
+      <h2 class="section-title" style="margin-bottom:13px">Profil</h2>
+      <div class="form-grid">
+        <div class="field">
+          <label class="field-label" for="settings-name">Nama</label>
+          <input type="text" class="input" id="settings-name" placeholder="Nama kamu" />
+        </div>
+        <div class="field">
+          <label class="field-label" for="settings-email">Email</label>
+          <input type="email" class="input" id="settings-email" disabled />
+          <p class="field-help">Email akun tidak bisa diubah dari sini.</p>
+        </div>
+      </div>
+      <div class="form-actions" style="margin-top:14px">
+        <button type="button" class="btn btn-primary" id="settings-save-profile">
+          <Fragment set:html={icon('check', 16)} />
+          <span>Simpan Profil</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="section-title" style="margin-bottom:5px">Tampilan</h2>
+      <p class="page-sub" style="margin-bottom:13px">Pilih tema yang paling nyaman untuk matamu.</p>
+      <div class="page-actions" id="settings-theme"></div>
+    </section>
+
+    <section class="card">
+      <h2 class="section-title" style="margin-bottom:5px">Vault Password</h2>
+      <p class="page-sub" style="margin-bottom:13px">
+        Tempat password akunmu disimpan. Isinya dienkripsi di browser sebelum disimpan, jadi tidak ada yang bisa
+        membacanya tanpa master password — termasuk server.
+      </p>
+      <div id="settings-vault"></div>
+    </section>
+
+    <section class="card">
+      <h2 class="section-title" style="margin-bottom:13px">Keamanan</h2>
+      <div id="settings-security"></div>
+    </section>
+
+    <section class="card">
+      <h2 class="section-title" style="margin-bottom:5px">Backup &amp; Export</h2>
+      <p class="page-sub" style="margin-bottom:13px">
+        Unduh seluruh datamu sebagai satu berkas JSON. Tidak ada password di dalamnya karena aplikasi ini memang tidak
+        menyimpan password.
+      </p>
+      <div class="page-actions">
+        <button type="button" class="btn btn-primary" id="settings-export">
+          <Fragment set:html={icon('download', 16)} />
+          <span>Unduh Backup (JSON)</span>
+        </button>
+        <label class="btn btn-outline" for="settings-import" style="cursor:pointer">
+          <Fragment set:html={icon('upload', 16)} />
+          <span>Pulihkan dari Backup</span>
+        </label>
+        <input type="file" id="settings-import" accept="application/json,.json" hidden />
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="section-title" style="margin-bottom:5px">Data Demo</h2>
+      <p class="page-sub" id="settings-demo-note" style="margin-bottom:13px">
+        Data contoh untuk mencoba aplikasi. Semuanya ditandai sebagai data demo sehingga mudah dihapus.
+      </p>
+      <div class="page-actions">
+        <button type="button" class="btn btn-outline" id="settings-seed">
+          <Fragment set:html={icon('database', 16)} />
+          <span>Muat Data Demo</span>
+        </button>
+        <button type="button" class="btn btn-ghost" id="settings-delete-demo">
+          <Fragment set:html={icon('trash', 16)} />
+          <span>Hapus Data Demo</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="card" id="settings-wipe-section">
+      <h2 class="section-title" style="margin-bottom:5px">Reset Data Lokal</h2>
+      <p class="page-sub" style="margin-bottom:13px">
+        Menghapus seluruh data yang tersimpan di perangkat ini. Hanya tersedia di Mode Lokal.
+      </p>
+      <button type="button" class="btn btn-danger" id="settings-wipe">
+        <Fragment set:html={icon('alert', 16)} />
+        <span>Reset Mode Lokal</span>
+      </button>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">Ringkasan Data</h2>
+      <div class="panel" id="settings-summary"></div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">Riwayat Aktivitas</h2>
+      <div class="panel" id="settings-activity"></div>
+    </section>
+  </div>
+
+  <script>
+    import { initSettingsPage } from '../lib/pages/settings';
+    void initSettingsPage();
+  </script>
+</AppLayout>

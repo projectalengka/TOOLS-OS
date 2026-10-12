@@ -1,0 +1,88 @@
+---
+import '../styles/global.css';
+import { icon } from '../lib/ui';
+---
+
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Masuk · PERSONAL OS</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%234f46e5'/%3E%3Ctext x='16' y='23' font-size='18' text-anchor='middle' fill='white'%3E%E2%9C%A6%3C/text%3E%3C/svg%3E" />
+    <script is:inline>
+      (function () {
+        try {
+          var pref = localStorage.getItem('personal-os:theme') || 'system';
+          var dark = pref === 'dark' ||
+            (pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+        } catch (error) {
+          document.documentElement.dataset.theme = 'light';
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="auth-wrap">
+      <div class="auth-card">
+        <div class="auth-brand">
+          <span class="brand-mark" aria-hidden="true">✦</span>
+          <span>PERSONAL OS</span>
+        </div>
+
+        <div>
+          <h1 class="auth-title" id="auth-title">Masuk</h1>
+          <p class="auth-sub" id="auth-sub">Masuk untuk membuka meja kerja digitalmu.</p>
+        </div>
+
+        <div class="auth-tabs" id="auth-tabs">
+          <button type="button" data-mode="signin" class="is-active">Masuk</button>
+          <button type="button" data-mode="signup">Daftar</button>
+        </div>
+
+        <form class="form" id="auth-form" novalidate>
+          <div class="field" id="field-name" hidden>
+            <label class="field-label" for="auth-name">Nama</label>
+            <input type="text" class="input" id="auth-name" placeholder="Nama kamu" autocomplete="name" />
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="auth-email">Email<span class="req">*</span></label>
+            <input type="email" class="input" id="auth-email" placeholder="nama@email.com" autocomplete="email" />
+          </div>
+
+          <div class="field" id="field-password">
+            <label class="field-label" for="auth-password">Password<span class="req">*</span></label>
+            <input
+              type="password"
+              class="input"
+              id="auth-password"
+              placeholder="Minimal 6 karakter"
+              autocomplete="current-password"
+            />
+          </div>
+
+          <p class="field-error" id="auth-error" hidden></p>
+
+          <button type="submit" class="btn btn-primary" id="auth-submit" style="width:100%">
+            <Fragment set:html={icon('arrowRight', 16)} />
+            <span>Masuk</span>
+          </button>
+
+          <button type="button" class="btn btn-ghost btn-sm" id="auth-forgot" hidden>Lupa password?</button>
+        </form>
+
+        <div class="auth-note" id="auth-note"></div>
+        <div class="auth-note" id="auth-hint" hidden></div>
+      </div>
+    </div>
+
+    <script>
+      import { initLoginPage } from '../lib/pages/login';
+      void initLoginPage();
+    </script>
+  </body>
+</html>

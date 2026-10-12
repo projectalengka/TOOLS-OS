@@ -1,0 +1,86 @@
+---
+/**
+ * Kerangka utama aplikasi: sidebar, topbar, konten, dan Command Palette.
+ * Skrip inline di <head> menetapkan tema sebelum halaman digambar supaya
+ * tidak ada kedipan warna.
+ */
+import '../styles/global.css';
+import Sidebar from '../components/Sidebar.astro';
+import TopBar from '../components/TopBar.astro';
+import CommandPalette from '../components/CommandPalette.astro';
+import { icon } from '../lib/ui';
+import { isSupabaseConfigured } from '../lib/supabase';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = 'Meja kerja digital pribadi.' } = Astro.props;
+
+/**
+ * Banner mode penyimpanan.
+ *
+ * Pada `npm run dev` banner ini tidak muncul (Mode Lokal memang wajar saat
+ * pengembangan). Pada build produksi ia muncul kalau Supabase belum
+ * dikonfigurasi, karena di situs yang sudah online kondisi itu berarti data
+ * pengunjung hanya tersimpan di browser mereka masing-masing — tidak
+ * tersinkron, dan hilang kalau ganti perangkat.
+ */
+const showStorageBanner = import.meta.env.PROD && !isSupabaseConfigured;
+---
+
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="description" content={description} />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{title} · PERSONAL OS</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%234f46e5'/%3E%3Ctext x='16' y='23' font-size='18' text-anchor='middle' fill='white'%3E%E2%9C%A6%3C/text%3E%3C/svg%3E" />
+    <script is:inline>
+      (function () {
+        try {
+          var pref = localStorage.getItem('personal-os:theme') || 'system';
+          var dark = pref === 'dark' ||
+            (pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+        } catch (error) {
+          document.documentElement.dataset.theme = 'light';
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="app">
+      <Sidebar />
+      <div class="main">
+        {
+          showStorageBanner && (
+            <div class="storage-banner" role="alert">
+              <span class="storage-banner-icon" set:html={icon('alert', 16)} />
+              <span>
+                <strong>Mode Lokal aktif di situs online.</strong> Data hanya tersimpan di browser perangkat ini, tidak
+                di server. Tambahkan <code>PUBLIC_SUPABASE_URL</code> dan <code>PUBLIC_SUPABASE_ANON_KEY</code> di
+                environment hosting, lalu build ulang.
+              </span>
+            </div>
+          )
+        }
+        <TopBar />
+        <main class="content" id="content">
+          <slot />
+        </main>
+      </div>
+    </div>
+
+    <CommandPalette />
+
+    <script>
+      import { initShell } from '../lib/shell';
+      initShell();
+    </script>
+  </body>
+</html>
