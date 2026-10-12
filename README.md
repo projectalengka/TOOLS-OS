@@ -3,12 +3,11 @@
 Meja kerja digital pribadi: satu tempat untuk menyimpan, mencari, mengelola, dan
 menggunakan kembali semua data penting.
 
+**Sudah online: <https://tools-os.vercel.app>** — baca [DEPLOY.md](DEPLOY.md)
+untuk status lengkap, cara mengubah konfigurasi, dan langkah membangun ulang.
+
 Dibangun dengan **Astro + TypeScript + Tailwind CSS + Supabase**, tanpa backend
 Node terpisah, dan siap di-deploy ke **Vercel** sebagai situs statis.
-
-> **Mau langsung online?** Baca **[DEPLOY.md](DEPLOY.md)** — panduan langkah demi
-> langkah dari nol: Supabase → GitHub → Vercel, lengkap dengan daftar yang perlu
-> disiapkan dan cara mengatasi error yang sering muncul.
 
 ---
 
@@ -291,21 +290,32 @@ metadatanya. Di mode Supabase, berkasnya tetap ada di Supabase Storage.
 
 ## Verifikasi yang sudah dilakukan
 
-Diuji dengan Chromium sungguhan (Playwright) pada Mode Lokal:
+**Situs produksi** — https://tools-os.vercel.app — diuji dengan Chromium sungguhan
+terhadap Supabase sungguhan. **13/13 lulus**: pendaftaran akun, badge SUPABASE,
+statistik dashboard, simpan project, data bertahan setelah muat ulang, simpan &
+buka password vault, pencarian global lewat `search_all()`, 0 console error.
 
-- **59/59 pemeriksaan lulus** untuk alur utama: masuk, buat prompt, salin ke
-  clipboard, versioning prompt, favorit, arsip → pulihkan, pencarian global,
-  buka detail, Command Palette (`Ctrl + K`), unggah dokumen, ubah status tugas,
-  halaman detail project, ganti tema, dan drawer mobile.
-- **31/31 pemeriksaan lulus** untuk vault: pembuatan master password, penolakan
-  password pendek dan konfirmasi yang tidak sama, enkripsi tersimpan, penolakan
-  master password salah, buka/tampilkan/salin password, generator, ganti master
-  password (kunci lama tidak berlaku lagi, isi tetap terbaca), dan hapus rahasia.
-- **24/24 pemeriksaan lulus** untuk Backup & Export, termasuk siklus penuh:
-  simpan password → export JSON → hapus account → import → password masih bisa
-  dibuka dan isinya sama.
-- **Bukti enkripsi**: plaintext password dan master password **tidak ditemukan**
-  di `localStorage` maupun di berkas backup; yang ada hanya ciphertext, IV, dan salt.
+Diverifikasi juga langsung di database: 14 tabel, RLS aktif di 14 tabel (16 policy),
+trigger profil berjalan, ciphertext password 44 karakter, IV 12 byte, dan
+**plaintext password tidak ditemukan di kolom ciphertext**.
+
+**Mode Lokal** — 114 pemeriksaan browser lulus:
+
+- **59/59** alur utama: masuk, buat prompt, salin ke clipboard, versioning prompt,
+  favorit, arsip → pulihkan, pencarian global, buka detail, Command Palette
+  (`Ctrl + K`), unggah dokumen, ubah status tugas, halaman detail project,
+  ganti tema, dan drawer mobile.
+- **31/31** vault: pembuatan master password, penolakan password pendek dan
+  konfirmasi yang tidak sama, enkripsi tersimpan, penolakan master password salah,
+  buka/tampilkan/salin password, generator, ganti master password, dan hapus rahasia.
+- **24/24** Backup & Export, termasuk siklus penuh: simpan password → export JSON
+  → hapus account → import → password masih bisa dibuka dan isinya sama.
+
+**Bukti enkripsi**: plaintext password dan master password **tidak ditemukan** di
+`localStorage`, di berkas backup, maupun di kolom `ciphertext` di PostgreSQL.
+
+**Gerbang mutu lainnya**:
+
 - **0 console error** di seluruh halaman.
 - **0 overflow horizontal** di 13 rute pada lebar 375 px dan 768 px.
 - `npx tsc --noEmit` bersih (0 error) untuk 28 berkas di `src/lib`.
@@ -314,11 +324,6 @@ Diuji dengan Chromium sungguhan (Playwright) pada Mode Lokal:
   (127–172 KB sebelum kompresi, 9–11 berkas per halaman).
 - Audit kesiapan deploy: tidak ada `.env`, JWT, `service_role`, atau URL project
   Supabase yang tertanam di `dist/`. Rincian lengkap di [DEPLOY.md](DEPLOY.md).
-
-**Yang belum terbukti:** jalur Supabase belum pernah dijalankan dengan project
-Supabase sungguhan — skema SQL, RLS, Storage policy, dan adapter-nya sudah
-ditulis tetapi belum dieksekusi terhadap server nyata. Semua yang terverifikasi
-di atas berjalan di Mode Lokal.
 
 ---
 

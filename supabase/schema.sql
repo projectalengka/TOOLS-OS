@@ -82,6 +82,20 @@ $$;
 -- ============================================================================
 -- 3. TABEL
 -- ============================================================================
+--
+-- ⚠️  JEBAKAN: kolom `search_vector` di bawah memakai GENERATED ALWAYS ... STORED.
+--     Ekspresi generated column WAJIB immutable. Di PostgreSQL, cast enum ke text
+--     TIDAK immutable (fungsi `enum_out` bertanda STABLE), jadi menulis
+--     `coalesce(category::text, '')` di dalam generated column akan ditolak:
+--
+--         ERROR: 42P17: generation expression is not immutable
+--
+--     Karena itu kolom enum (status, category, priority) sengaja TIDAK ikut ke
+--     search_vector. Pencariannya dilakukan di fungsi search_all() bagian bawah
+--     lewat perbandingan ilike biasa — di sana cast enum ke text sah.
+--
+--     Sudah pernah kena saat deploy pertama. Jangan dikembalikan.
+-- ============================================================================
 
 -- 3.1 profiles ---------------------------------------------------------------
 create table if not exists public.profiles (
@@ -118,7 +132,7 @@ create table if not exists public.projects (
   updated_at   timestamptz not null default now(),
   search_vector tsvector generated always as (
     to_tsvector('simple',
-      coalesce(name, '') || ' ' || coalesce(description, '') || ' ' || coalesce(status::text, ''))
+      coalesce(name, '') || ' ' || coalesce(description, ''))
   ) stored
 );
 
@@ -142,7 +156,7 @@ create table if not exists public.prompts (
   search_vector tsvector generated always as (
     to_tsvector('simple',
       coalesce(title, '') || ' ' || coalesce(description, '') || ' ' ||
-      coalesce(prompt_content, '') || ' ' || coalesce(category::text, '') || ' ' || coalesce(ai_model, ''))
+      coalesce(prompt_content, '') || ' ' || coalesce(ai_model, ''))
   ) stored
 );
 
@@ -180,7 +194,7 @@ create table if not exists public.documents (
   search_vector tsvector generated always as (
     to_tsvector('simple',
       coalesce(title, '') || ' ' || coalesce(description, '') || ' ' ||
-      coalesce(file_type, '') || ' ' || coalesce(category::text, ''))
+      coalesce(file_type, ''))
   ) stored
 );
 
@@ -218,7 +232,7 @@ create table if not exists public.links (
   search_vector tsvector generated always as (
     to_tsvector('simple',
       coalesce(title, '') || ' ' || coalesce(description, '') || ' ' ||
-      coalesce(url, '') || ' ' || coalesce(category::text, ''))
+      coalesce(url, ''))
   ) stored
 );
 
@@ -592,7 +606,8 @@ as $$
     where p.user_id = auth.uid()
       and (p.search_vector @@ (select tsq from t)
            or p.name ilike '%' || (select term from s) || '%'
-           or coalesce(p.description, '') ilike '%' || (select term from s) || '%')
+           or coalesce(p.description, '') ilike '%' || (select term from s) || '%'
+           or p.status::text ilike '%' || (select term from s) || '%')
 
     union all
     select 'prompt', x.id, x.title, x.category::text,
@@ -604,7 +619,8 @@ as $$
       and (x.search_vector @@ (select tsq from t)
            or x.title ilike '%' || (select term from s) || '%'
            or coalesce(x.prompt_content, '') ilike '%' || (select term from s) || '%'
-           or coalesce(x.description, '') ilike '%' || (select term from s) || '%')
+           or coalesce(x.description, '') ilike '%' || (select term from s) || '%'
+           or x.category::text ilike '%' || (select term from s) || '%')
 
     union all
     select 'document', x.id, x.title, x.category::text,
@@ -615,7 +631,8 @@ as $$
     where x.user_id = auth.uid()
       and (x.search_vector @@ (select tsq from t)
            or x.title ilike '%' || (select term from s) || '%'
-           or coalesce(x.description, '') ilike '%' || (select term from s) || '%')
+           or coalesce(x.description, '') ilike '%' || (select term from s) || '%'
+           or x.category::text ilike '%' || (select term from s) || '%')
 
     union all
     select 'note', x.id, coalesce(nullif(x.title, ''), 'Catatan tanpa judul'), '',
@@ -638,7 +655,8 @@ as $$
       and (x.search_vector @@ (select tsq from t)
            or x.title ilike '%' || (select term from s) || '%'
            or x.url ilike '%' || (select term from s) || '%'
-           or coalesce(x.description, '') ilike '%' || (select term from s) || '%')
+           or coalesce(x.description, '') ilike '%' || (select term from s) || '%'
+           or x.category::text ilike '%' || (select term from s) || '%')
 
     union all
     select 'account', x.id, x.service, coalesce(nullif(x.email, ''), x.username),

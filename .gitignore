@@ -10,3 +10,6 @@ dist/
 
 # Catatan kerja asisten (bukan bagian dari aplikasi)
 .workbuddy-ai/
+
+.vercel
+.env*

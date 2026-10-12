@@ -1,26 +1,52 @@
 # Panduan Deploy PERSONAL OS
 
-Panduan ini mengarahkan dari nol sampai aplikasi online: **Supabase** (database) →
-**GitHub** (kode) → **Vercel** (hosting).
+> ## ✅ SUDAH ONLINE — tidak ada yang perlu di-deploy lagi
+>
+> | | |
+> | --- | --- |
+> | **Alamat situs** | **https://tools-os.vercel.app** |
+> | Repo GitHub | https://github.com/projectalengka/TOOLS-OS |
+> | Supabase | project **TOOLS OS** (`ovlbkcfjowetfoccevup`), region Tokyo |
+> | Status | 14 tabel + RLS aktif · Email provider aktif · Site URL tersambung · Auto-deploy dari GitHub aktif |
+>
+> ### Yang perlu kamu lakukan sekarang: **buka situsnya dan daftar akun**
+>
+> 1. Buka **https://tools-os.vercel.app**
+> 2. Klik **Daftar**, isi email dan password (minimal 6 karakter)
+> 3. Setelah masuk, badge di sidebar kiri harus berbunyi **SUPABASE**
+> 4. Buka **Pengaturan → Data Demo → Muat Data Demo** untuk mengisi contoh data
+> 5. Buka **Accounts → Account Baru** untuk mulai menyimpan akun Gmail + passwordnya.
+>    Di sini kamu akan diminta membuat **master password vault** — tulis di tempat aman,
+>    karena **tidak bisa dipulihkan** kalau lupa.
+>
+> Database saat ini **kosong dan bersih** — akun uji otomatis sudah dihapus.
+> Situsnya sudah saya uji langsung: daftar, simpan data, buka password, dan
+> pencarian semuanya bekerja. Bukti lengkapnya ada di bagian
+> **Lampiran: hasil audit** di bawah.
 
-Total waktu ±20 menit. Semuanya bisa memakai paket gratis.
+Bagian di bawah ini disimpan sebagai **referensi** — untuk memahami cara kerja
+sistemnya, mengubah konfigurasi, atau membangun ulang dari nol kalau suatu saat
+diperlukan.
 
 ---
 
-## Ringkasan: apa yang akan dibuat
+## Ringkasan: bagaimana semuanya tersambung
 
 ```
-GitHub  ──push──►  Vercel  ──build──►  situs online
+GitHub  ──push──►  Vercel  ──build──►  https://tools-os.vercel.app
    │                  │
    │                  └── membaca 2 environment variable ──┐
    │                                                       ▼
-   └── berisi kode aplikasi                          Supabase
-                                                    (database + auth
-                                                     + penyimpanan berkas)
+   └── berisi kode aplikasi                          Supabase (Tokyo)
+                                                    database + auth
+                                                    + penyimpanan berkas
 ```
 
 Aplikasi ini **situs statis**: Vercel hanya mengubah kode jadi HTML/CSS/JS.
 Semua data hidup di Supabase, dan diakses langsung dari browser pengguna.
+
+**Setiap kali kamu `git push`, Vercel otomatis build dan menayangkan versi baru.**
+Tidak perlu deploy manual.
 
 ---
 
@@ -44,7 +70,17 @@ Centang dulu sebelum mulai:
 
 ---
 
-## Langkah 1 — Supabase (database)
+## Langkah 1 — Supabase (database) ✅ SUDAH SELESAI
+
+Project **TOOLS OS** sudah dibuat dan skemanya sudah dijalankan:
+
+- Ref: `ovlbkcfjowetfoccevup` · region **ap-northeast-1 (Tokyo)**
+- **14 tabel** dengan **Row Level Security aktif di semuanya** (16 policy)
+- Provider **Email** aktif, konfirmasi email dimatikan
+- **Site URL** = `https://tools-os.vercel.app`
+- Bucket Storage `documents` (privat, maksimal 10 MB)
+
+*Bagian di bawah ini hanya untuk referensi kalau perlu membangun ulang.*
 
 ### 1.1 Buat project
 
@@ -164,7 +200,27 @@ Pilih **Sign in with your browser** dan izinkan. Sekali saja.
 
 ---
 
-## Langkah 3 — Vercel (hosting) ← **MULAI DARI SINI**
+## Langkah 3 — Vercel (hosting) ✅ SUDAH SELESAI
+
+Situs sudah online di **https://tools-os.vercel.app**
+
+- Project Vercel: `tools-os` (id `prj_daediCKg1TdpsJIyeOE1g0TsTSUj`)
+- **Environment variable** `PUBLIC_SUPABASE_URL` dan `PUBLIC_SUPABASE_ANON_KEY`
+  terpasang untuk **Production + Preview + Development**
+- **Deployment Protection dimatikan** — kalau dibiarkan menyala, situs hanya bisa
+  dibuka oleh yang punya akun Vercel
+- **Tersambung ke repo GitHub** — setiap `git push` otomatis build & tayang
+
+### Mengubah environment variable
+
+Buka **Vercel → project tools-os → Settings → Environment Variables**.
+Setelah diubah, **wajib Redeploy** (Deployments → ⋯ → Redeploy) supaya berlaku.
+
+> ⚠️ **Jangan hapus awalan `PUBLIC_`** dari nama variabel. Awalan itu yang membuat
+> Astro memasukkannya ke sisi browser. Tanpa itu, aplikasi akan berjalan di Mode
+> Lokal dan menampilkan banner kuning.
+
+*Bagian di bawah ini hanya untuk referensi kalau perlu membangun ulang.*
 
 ### 3.1 Import project
 
@@ -201,10 +257,16 @@ dan **Development**.
 
 ---
 
-## Langkah 4 — Sambungkan balik ke Supabase
+## Langkah 4 — Menyambungkan Supabase ke Vercel ✅ SUDAH SELESAI
 
-Ini langkah yang paling sering terlupa. Tanpa ini, login dan reset password
-tidak akan bekerja karena Supabase belum mengenali alamat situsmu.
+Supabase sudah mengenali alamat situsmu:
+
+- **Site URL** = `https://tools-os.vercel.app`
+- **Redirect URLs** = `https://tools-os.vercel.app`, `/masuk`, `/**`,
+  plus `http://localhost:4321` untuk pengembangan lokal
+
+Tanpa langkah ini, login dan reset password tidak akan bekerja — tautannya akan
+mengarah ke `localhost`. Kalau nanti kamu mengganti domain, **ulangi langkah ini**.
 
 1. Buka Supabase → **Authentication** → **URL Configuration**.
 2. Isi:
@@ -273,18 +335,19 @@ tidak bisa dikembalikan, jadi siapkan daftar akunmu untuk diisi ulang.
 
 Setelah semua selesai, pastikan ini tercentang:
 
-- [x] ~~Kode sudah ada di GitHub~~ — **selesai**: `github.com/projectalengka/TOOLS-OS`
-- [ ] `schema.sql` sudah dijalankan di Supabase sampai **Success**
-- [ ] Provider **Email** aktif di Supabase
-- [ ] **Site URL** dan **Redirect URL** sudah diisi alamat Vercel
-- [ ] Dua environment variable ada di Vercel (Production + Preview + Development)
-- [ ] Situs sudah **Redeploy** setelah env variable diisi
-- [ ] Badge sidebar berbunyi **SUPABASE**
-- [ ] Tidak ada banner kuning
-- [ ] Bisa **Daftar** dan **Masuk**
-- [ ] Data yang dibuat di HP muncul juga di komputer (bukti tersinkron)
-- [ ] Master password vault sudah dicatat di tempat aman
-- [ ] Repo GitHub dijadikan **Private** (kalau mau)
+- [x] ~~Kode sudah ada di GitHub~~ — `github.com/projectalengka/TOOLS-OS`
+- [x] ~~`schema.sql` dijalankan di Supabase~~ — 14 tabel, RLS aktif di semuanya
+- [x] ~~Provider **Email** aktif~~ — aktif, konfirmasi email dimatikan
+- [x] ~~**Site URL** dan **Redirect URL** diisi~~ — mengarah ke tools-os.vercel.app
+- [x] ~~Dua environment variable di Vercel~~ — Production + Preview + Development
+- [x] ~~Situs sudah dideploy~~ — https://tools-os.vercel.app
+- [x] ~~Badge sidebar berbunyi SUPABASE~~ — diverifikasi di situs live
+- [x] ~~Tidak ada banner kuning~~ — diverifikasi
+- [x] ~~Bisa daftar dan masuk~~ — diverifikasi dengan akun uji, lalu akun uji dihapus
+- [x] ~~Data tersimpan ke database~~ — diverifikasi langsung lewat query SQL
+- [ ] **Master password vault sudah dicatat** ← *kamu, sebelum menyimpan password pertama*
+- [ ] Repo GitHub dijadikan **Private** (kalau mau) — repo saat ini publik
+- [ ] Akun sendiri sudah didaftarkan di https://tools-os.vercel.app
 
 ---
 
@@ -351,7 +414,10 @@ Diperiksa sebelum panduan ini ditulis. Yang **diperbaiki**:
 
 | Temuan | Risiko | Perbaikan |
 | --- | --- | --- |
-| Build produksi tanpa Supabase berjalan diam-diam di Mode Lokal | **Tinggi** — data tersimpan di browser pengunjung, tidak tersinkron, hilang saat ganti perangkat | Build sekarang menampilkan peringatan besar di log, dan aplikasi menampilkan banner kuning di setiap halaman |
+| **`schema.sql` ditolak PostgreSQL**: `ERROR: 42P17: generation expression is not immutable` | **Tinggi** — skema gagal dijalankan, aplikasi tidak bisa dipakai sama sekali | Kolom `search_vector` memakai cast enum→text (`status::text`, `category::text`). Di PostgreSQL, `enum_out` bertanda **STABLE**, bukan IMMUTABLE, sehingga tidak boleh dipakai di generated column. Cast dihapus dari 4 generated column; pencariannya dipindah ke `search_all()` lewat `ilike` biasa. Peringatan ditambahkan di dalam `schema.sql` supaya tidak terulang. **Ini baru ketahuan karena skemanya benar-benar dijalankan.** |
+| Build produksi tanpa Supabase berjalan diam-diam di Mode Lokal | **Tinggi** — data tersimpan di browser pengunjung, tidak tersinkron, hilang saat ganti perangkat | Build menampilkan peringatan besar di log, dan aplikasi menampilkan banner kuning di setiap halaman |
+| `vercel env add` lewat pipa stdin menulis nilai yang salah | **Tinggi** — `PUBLIC_SUPABASE_ANON_KEY` tidak pernah masuk, dan URL tersimpan sebagai nilai 1112 karakter | Environment variable dipasang lewat Vercel REST API, lalu diverifikasi dengan membaca ulang daftarnya |
+| Deployment Protection menyala | Sedang — situs terkunci di balik login Vercel, tidak bisa dibuka dari HP | `ssoProtection` dimatikan lewat API |
 | Vault terkunci otomatis (15 menit) saat modal password sedang terbuka | Sedang — muncul error "Vault sedang terkunci" padahal pengguna tidak mengunci apa pun | Vault otomatis dibuka ulang lewat gerbang, lalu operasi diulang sekali |
 | Vault terkunci di tengah proses simpan | Sedang — data akun tersimpan tapi password tidak, tanpa pemberitahuan | Pengguna diberi tahu persis: "Data akun tersimpan, tetapi password belum" |
 | Alamat situs tertulis tetap di konfigurasi | Rendah — salah kalau domain Vercel berbeda | Dibaca dari `PUBLIC_SITE_URL`, ada nilai cadangan |
@@ -365,21 +431,34 @@ Yang **diperiksa dan hasilnya bersih**:
   tidak ikut ke Git. Diverifikasi dengan `git ls-files`.
 - Tidak ada `console.log` yang tertinggal, tidak ada TODO, tidak ada teks
   placeholder, dan tidak ada label antarmuka yang masih berbahasa Inggris.
-- Skema database: 14 tabel, Row Level Security aktif di semuanya. `profiles`
-  memakai policy `auth.uid() = id`; 13 tabel lain memakai `auth.uid() = user_id`.
 - Fungsi penanganan error tidak pernah menampilkan pesan mentah dari server ke
   pengguna — semuanya diterjemahkan lebih dulu.
 
-Yang **diverifikasi dengan menjalankan aplikasinya** (Chromium sungguhan):
+### Diverifikasi terhadap Supabase sungguhan
 
-- **114 pemeriksaan lulus**: 59 alur utama + 31 vault + 24 backup. 0 kegagalan.
-- **0 console error** di seluruh halaman.
-- **0 overflow horizontal** di 13 rute pada lebar 375 px dan 768 px.
-- `tsc --noEmit` bersih (0 error) untuk 28 berkas.
-- `astro build` menghasilkan 16 halaman tanpa peringatan.
+Setelah situs live, dijalankan **13 pemeriksaan di https://tools-os.vercel.app
+dengan Chromium sungguhan** — semuanya lulus:
 
-**Yang belum terverifikasi:** seluruh pengujian di atas berjalan di Mode Lokal.
-Jalur Supabase (tabel, RLS, Storage, Auth) sudah ditulis lengkap tetapi belum
-pernah dieksekusi terhadap project Supabase sungguhan. Kalau muncul error saat
-Langkah 1.2 atau saat login pertama, kirimkan pesan error-nya — itu bagian yang
-belum terbukti, bukan bagian yang sudah diuji.
+- Halaman masuk memakai alur Supabase (kolom password + tab Daftar tampil)
+- Pendaftaran akun baru berhasil dan langsung masuk ke Dashboard
+- Badge sidebar berbunyi **SUPABASE**, dan **tidak ada banner kuning**
+- Dashboard memuat statistik dari Supabase
+- Project baru tersimpan, dan **tetap ada setelah halaman dimuat ulang**
+- Account dengan password tersimpan; **password bisa dibuka kembali** dan isinya sama
+- Pencarian global bekerja (memanggil fungsi `search_all()` di PostgreSQL)
+- **0 console error**
+
+Lalu diverifikasi lagi **langsung di database**, bukan hanya lewat tampilan:
+
+| Yang diperiksa | Hasil |
+| --- | --- |
+| Tabel dibuat | 14 dari 14 |
+| RLS aktif | 14 dari 14 tabel, 16 policy |
+| Trigger profil saat daftar | 1 user → 1 profil (bekerja) |
+| Panjang ciphertext password | 44 karakter (base64) |
+| Panjang IV | 16 karakter (= 12 byte) |
+| **Plaintext password di kolom ciphertext** | **0 — tidak ditemukan** |
+| `ON DELETE CASCADE` | Menghapus user menghapus seluruh datanya |
+
+Akun uji otomatis sudah dihapus setelah verifikasi, jadi database dalam keadaan
+**kosong dan bersih**, siap untuk akunmu sendiri.
