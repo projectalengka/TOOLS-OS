@@ -6,6 +6,10 @@ menggunakan kembali semua data penting.
 Dibangun dengan **Astro + TypeScript + Tailwind CSS + Supabase**, tanpa backend
 Node terpisah, dan siap di-deploy ke **Vercel** sebagai situs statis.
 
+> **Mau langsung online?** Baca **[DEPLOY.md](DEPLOY.md)** — panduan langkah demi
+> langkah dari nol: Supabase → GitHub → Vercel, lengkap dengan daftar yang perlu
+> disiapkan dan cara mengatasi error yang sering muncul.
+
 ---
 
 ## Dua mode penyimpanan
@@ -306,6 +310,10 @@ Diuji dengan Chromium sungguhan (Playwright) pada Mode Lokal:
 - **0 overflow horizontal** di 13 rute pada lebar 375 px dan 768 px.
 - `npx tsc --noEmit` bersih (0 error) untuk 28 berkas di `src/lib`.
 - `npx astro build` menghasilkan 16 halaman tanpa peringatan.
+- Berat halaman terukur: **rata-rata 40 KB** setelah kompresi brotli
+  (127–172 KB sebelum kompresi, 9–11 berkas per halaman).
+- Audit kesiapan deploy: tidak ada `.env`, JWT, `service_role`, atau URL project
+  Supabase yang tertanam di `dist/`. Rincian lengkap di [DEPLOY.md](DEPLOY.md).
 
 **Yang belum terbukti:** jalur Supabase belum pernah dijalankan dengan project
 Supabase sungguhan — skema SQL, RLS, Storage policy, dan adapter-nya sudah
