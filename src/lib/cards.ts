@@ -7,6 +7,7 @@
  */
 
 import { RESOURCES, label } from './resources';
+import { isHideable } from './types';
 import { icon, esc, formatRelative, formatBytes, formatDue, plainText } from './ui';
 import type { ResourceMap, ResourceName, Tag } from './types';
 
@@ -136,6 +137,15 @@ function actionsFor(resource: ResourceName, row: Row, archived: boolean): string
     const done = text(row.status) === 'DONE';
     parts.push(
       `<button type="button" class="btn btn-ghost btn-sm" data-action="toggle-task" data-id="${esc(id)}">${icon('check', 15)}<span>${done ? 'Buka lagi' : 'Tandai selesai'}</span></button>`,
+    );
+  }
+
+  // Ruang Pribadi: pindahkan masuk atau keluar dari daftar tersembunyi.
+  if (isHideable(resource)) {
+    parts.push(
+      row.hidden
+        ? actionButton('unhide', id, 'eye', 'Keluarkan')
+        : actionButton('hide', id, 'eyeOff', 'Sembunyikan'),
     );
   }
 

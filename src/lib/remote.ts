@@ -11,6 +11,7 @@ import type {
   ActivityLog, BackupPayload, ListOptions, PromptVersion, ResourceMap,
   ResourceName, SearchHit, Secret, Session, Tag, TagItemType, VaultMeta,
 } from './types';
+import { isHideable } from './types';
 import { RESOURCES } from './resources';
 
 const BUCKET = 'documents';
@@ -173,6 +174,13 @@ export const remoteAdapter = {
     if (opts.favorite) query = query.eq('favorite', true);
     if (opts.projectId) query = query.eq('project_id', opts.projectId);
     if (opts.status) query = query.eq('status', opts.status);
+
+    // Ruang Pribadi. Aman secara bawaan: kalau pemanggil tidak menyebut apa pun,
+    // data yang disembunyikan TIDAK ikut terdaftar.
+    if (isHideable(resource)) {
+      if (opts.hiddenOnly) query = query.eq('hidden', true);
+      else if (!opts.includeHidden) query = query.eq('hidden', false);
+    }
     if (opts.category) {
       const field = RESOURCES[resource].categoryField;
       if (field) query = query.eq(field, opts.category);
@@ -241,24 +249,32 @@ export const remoteAdapter = {
       .select('*', { count: 'exact', head: true })
       .eq('user_id', session.userId)
       .eq('archived', opts.archived ?? false);
+    // Statistik juga tidak boleh menghitung isi Ruang Pribadi.
+    if (isHideable(resource)) query = query.eq('hidden', false);
     const result = await query;
     if (result.error) return 0;
     return result.count ?? 0;
   },
 
   async countByProject(resource: ResourceName, projectId: string): Promise<number> {
-    const result = await (await getSupabaseClient())
+    let query = (await getSupabaseClient())
       .from(resource)
       .select('*', { count: 'exact', head: true })
       .eq('project_id', projectId)
       .eq('archived', false);
+    if (isHideable(resource)) query = query.eq('hidden', false);
+    const result = await query;
     if (result.error) return 0;
     return result.count ?? 0;
   },
 
   /* -------------------------------------------------------- pencarian */
-  async search(q: string, limit = 12): Promise<SearchHit[]> {
-    const result = await (await getSupabaseClient()).rpc('search_all', { q, lim: limit });
+  async search(q: string, limit = 12, opts: { includeHidden?: boolean } = {}): Promise<SearchHit[]> {
+    const result = await (await getSupabaseClient()).rpc('search_all', {
+      q,
+      lim: limit,
+      include_hidden: opts.includeHidden === true,
+    });
     if (result.error) throw new Error(friendly(result.error.message, 'Pencarian gagal dijalankan.'));
     return (result.data ?? []) as SearchHit[];
   },

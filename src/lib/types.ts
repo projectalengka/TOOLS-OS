@@ -36,6 +36,8 @@ export interface Project extends BaseRow {
   description: string;
   status: ProjectStatus;
   color: string;
+  /** Disembunyikan dari tampilan normal; hanya muncul di Ruang Pribadi. */
+  hidden: boolean;
 }
 
 export interface Prompt extends BaseRow {
@@ -47,6 +49,8 @@ export interface Prompt extends BaseRow {
   category: PromptCategory;
   ai_model: string;
   variables: string;
+  /** Disembunyikan dari tampilan normal; hanya muncul di Ruang Pribadi. */
+  hidden: boolean;
 }
 
 export interface PromptVersion {
@@ -218,6 +222,20 @@ export interface ListOptions {
   orderBy?: 'updated_at' | 'created_at' | 'title' | 'due_date';
   ascending?: boolean;
   limit?: number;
+  /**
+   * Data yang disembunyikan (Ruang Pribadi) tidak ikut terdaftar secara default.
+   * Sengaja begitu supaya aman: halaman biasa tidak perlu ingat memfilternya.
+   */
+  includeHidden?: boolean;
+  /** Hanya ambil yang disembunyikan — dipakai halaman Ruang Pribadi. */
+  hiddenOnly?: boolean;
+}
+
+/** Resource yang punya kolom `hidden` (Ruang Pribadi). */
+export const HIDEABLE_RESOURCES = ['projects', 'prompts'] as const;
+
+export function isHideable(resource: string): boolean {
+  return (HIDEABLE_RESOURCES as readonly string[]).includes(resource);
 }
 
 export type BackupPayload = {

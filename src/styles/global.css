@@ -136,6 +136,9 @@ code, pre, .mono { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, 
   font-weight: 700;
   font-size: 13.5px;
   letter-spacing: 0.09em;
+  /* Sengaja tanpa cursor: pointer — pintu Ruang Pribadi tidak boleh terlihat. */
+  cursor: default;
+  user-select: none;
 }
 .brand-mark {
   width: 26px; height: 26px;

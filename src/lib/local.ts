@@ -16,6 +16,7 @@ import type {
   ResourceName, SearchHit, Secret, Session, Tag, TagItemType, TagRelation, VaultMeta,
 } from './types';
 import { RESOURCES, label } from './resources';
+import { isHideable } from './types';
 import * as idb from './idb';
 
 type Row = Record<string, unknown>;
@@ -320,6 +321,13 @@ export const localAdapter = {
     if (opts.favorite) rows = rows.filter((r) => bool(r.favorite));
     if (opts.projectId) rows = rows.filter((r) => str(r.project_id) === opts.projectId);
     if (opts.status) rows = rows.filter((r) => str(r.status) === opts.status);
+
+    // Ruang Pribadi. Perilakunya harus sama dengan adapter Supabase: data yang
+    // disembunyikan tidak ikut terdaftar kecuali diminta secara eksplisit.
+    if (isHideable(resource)) {
+      if (opts.hiddenOnly) rows = rows.filter((r) => bool(r.hidden));
+      else if (!opts.includeHidden) rows = rows.filter((r) => !bool(r.hidden));
+    }
     if (opts.category) {
       const field = RESOURCES[resource].categoryField;
       if (field) rows = rows.filter((r) => str(r[field]) === opts.category);
@@ -419,24 +427,33 @@ export const localAdapter = {
   async count(resource: ResourceName, opts: { archived?: boolean } = {}): Promise<number> {
     const db = readDb();
     const wantArchived = opts.archived ?? false;
-    return coll(db, resource).filter((r) => bool(r.archived) === wantArchived).length;
+    return coll(db, resource).filter(
+      (r) =>
+        bool(r.archived) === wantArchived &&
+        !(isHideable(resource) && bool(r.hidden)),
+    ).length;
   },
 
   async countByProject(resource: ResourceName, projectId: string): Promise<number> {
     const db = readDb();
     return coll(db, resource).filter(
-      (r) => str(r.project_id) === projectId && !bool(r.archived),
+      (r) =>
+        str(r.project_id) === projectId &&
+        !bool(r.archived) &&
+        !(isHideable(resource) && bool(r.hidden)),
     ).length;
   },
 
   /* --- pencarian --- */
-  async search(q: string, limit = 12): Promise<SearchHit[]> {
+  async search(q: string, limit = 12, opts: { includeHidden?: boolean } = {}): Promise<SearchHit[]> {
     const term = q.trim();
     if (!term) return [];
     const db = readDb();
     const hits: SearchHit[] = [];
     for (const resource of CONTENT_RESOURCES) {
       for (const row of coll(db, resource)) {
+        // Isi Ruang Pribadi tidak boleh muncul di pencarian biasa.
+        if (isHideable(resource) && bool(row.hidden) && !opts.includeHidden) continue;
         if (matchesSearch(row, resource, term)) hits.push(searchHit(resource, row, term));
       }
     }

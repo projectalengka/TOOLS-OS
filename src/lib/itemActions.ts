@@ -46,6 +46,12 @@ export async function openFormModal(
     onSaved: () => Promise<void> | void;
     /** Nilai awal untuk data baru, misalnya project_id dari halaman detail Project. */
     prefill?: Record<string, unknown>;
+    /**
+     * Nilai yang selalu ditambahkan saat MEMBUAT data baru, tapi tidak
+     * ditampilkan sebagai kolom di form. Dipakai untuk `hidden: true` supaya
+     * item baru langsung masuk Ruang Pribadi.
+     */
+    createDefaults?: Record<string, unknown>;
   },
 ): Promise<void> {
   const def = RESOURCES[resource];
@@ -139,7 +145,10 @@ export async function openFormModal(
       if (id) {
         await db.update(resource, id, result.values as never);
       } else {
-        const created = (await db.create(resource, result.values as never)) as unknown as Row;
+        const created = (await db.create(resource, {
+          ...(result.values as Record<string, unknown>),
+          ...(options.createDefaults ?? {}),
+        } as never)) as unknown as Row;
         savedId = text(created.id);
       }
       if (def.hasTags && savedId) await db.setTags(def.tagType, savedId, result.tags);
@@ -606,6 +615,68 @@ export async function handleItemAction(
         showError(error, 'Gagal memperbarui favorit.');
       }
       return;
+
+    /* -------------------------------------------------- ruang pribadi */
+    case 'hide': {
+      const isProject = resource === 'projects';
+      const confirmed = await confirmDialog({
+        title: 'Pindahkan ke Ruang Pribadi?',
+        message: isProject
+          ? 'Project ini beserta seluruh prompt di dalamnya akan disembunyikan dari semua daftar, pencarian, dan statistik. Untuk membukanya lagi, gunakan Ruang Pribadi.'
+          : 'Item ini akan disembunyikan dari semua daftar, pencarian, dan statistik. Untuk membukanya lagi, gunakan Ruang Pribadi.',
+        confirmLabel: 'Sembunyikan',
+      });
+      if (!confirmed) return;
+      try {
+        await db.update(resource, id, { hidden: true } as never);
+        let cascade = 0;
+        if (isProject) {
+          // Prompt di dalam project rahasia ikut disembunyikan — kalau tidak,
+          // judulnya masih muncul di halaman Prompt dan itu membocorkan.
+          const prompts = await db.list('prompts', { projectId: id, archived: null, includeHidden: true });
+          for (const prompt of prompts) {
+            if (prompt.hidden) continue;
+            await db.update('prompts', prompt.id, { hidden: true } as never);
+            cascade += 1;
+          }
+        }
+        await db.log('hide', def.tagType, id, label);
+        toast(
+          cascade > 0
+            ? `Disembunyikan ke Ruang Pribadi, termasuk ${cascade} prompt di dalamnya.`
+            : 'Disembunyikan ke Ruang Pribadi.',
+        );
+        await context.onChanged();
+      } catch (error) {
+        showError(error, 'Gagal menyembunyikan data.');
+      }
+      return;
+    }
+
+    case 'unhide': {
+      try {
+        await db.update(resource, id, { hidden: false } as never);
+        let cascade = 0;
+        if (resource === 'projects') {
+          const prompts = await db.list('prompts', { projectId: id, archived: null, includeHidden: true });
+          for (const prompt of prompts) {
+            if (!prompt.hidden) continue;
+            await db.update('prompts', prompt.id, { hidden: false } as never);
+            cascade += 1;
+          }
+        }
+        await db.log('unhide', def.tagType, id, label);
+        toast(
+          cascade > 0
+            ? `Dikeluarkan dari Ruang Pribadi, termasuk ${cascade} prompt di dalamnya.`
+            : 'Dikeluarkan dari Ruang Pribadi.',
+        );
+        await context.onChanged();
+      } catch (error) {
+        showError(error, 'Gagal mengeluarkan data dari Ruang Pribadi.');
+      }
+      return;
+    }
 
     case 'archive':
       try {

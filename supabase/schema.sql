@@ -117,6 +117,10 @@ create table if not exists public.profiles (
 alter table public.profiles add column if not exists vault_salt  text;
 alter table public.profiles add column if not exists vault_check text;
 
+-- Untuk pemasangan yang sudah ada: kolom `hidden` (Ruang Pribadi).
+alter table public.projects add column if not exists hidden boolean not null default false;
+alter table public.prompts  add column if not exists hidden boolean not null default false;
+
 -- 3.2 projects ---------------------------------------------------------------
 create table if not exists public.projects (
   id           uuid primary key default gen_random_uuid(),
@@ -128,6 +132,9 @@ create table if not exists public.projects (
   favorite     boolean not null default false,
   archived     boolean not null default false,
   is_demo      boolean not null default false,
+  -- Disembunyikan dari semua tampilan normal, pencarian, dan statistik.
+  -- Hanya muncul di Ruang Pribadi, yang dibuka dengan master password.
+  hidden       boolean not null default false,
   created_at   timestamptz not null default now(),
   updated_at   timestamptz not null default now(),
   search_vector tsvector generated always as (
@@ -151,6 +158,8 @@ create table if not exists public.prompts (
   favorite        boolean not null default false,
   archived        boolean not null default false,
   is_demo         boolean not null default false,
+  -- Lihat penjelasan di tabel projects.
+  hidden          boolean not null default false,
   created_at      timestamptz not null default now(),
   updated_at      timestamptz not null default now(),
   search_vector tsvector generated always as (
@@ -440,6 +449,10 @@ create index if not exists activity_logs_user_idx   on public.activity_logs (use
 create index if not exists secrets_user_idx          on public.secrets (user_id);
 create index if not exists secrets_account_idx       on public.secrets (account_id);
 
+-- Ruang Pribadi: daftar normal selalu memfilter hidden = false.
+create index if not exists projects_hidden_idx       on public.projects (user_id, hidden);
+create index if not exists prompts_hidden_idx        on public.prompts (user_id, hidden);
+
 -- ============================================================================
 -- 5. TRIGGER
 -- ============================================================================
@@ -577,7 +590,12 @@ create policy "documents_delete_own" on storage.objects
 -- SECURITY INVOKER: RLS tetap berlaku, jadi user hanya mencari data miliknya.
 -- ============================================================================
 
-create or replace function public.search_all(q text, lim int default 8)
+-- Signature berubah saat Ruang Pribadi ditambahkan. `create or replace function`
+-- dengan daftar argumen berbeda akan MEMBUAT FUNGSI BARU (overload), bukan
+-- mengganti — jadi versi lama harus dihapus lebih dulu.
+drop function if exists public.search_all(text, int);
+
+create or replace function public.search_all(q text, lim int default 8, include_hidden boolean default false)
 returns table (
   item_type  text,
   item_id    uuid,
@@ -604,6 +622,7 @@ as $$
            ts_rank(p.search_vector, (select tsq from t)) as rank
     from public.projects p
     where p.user_id = auth.uid()
+      and (include_hidden or p.hidden = false)
       and (p.search_vector @@ (select tsq from t)
            or p.name ilike '%' || (select term from s) || '%'
            or coalesce(p.description, '') ilike '%' || (select term from s) || '%'
@@ -616,6 +635,7 @@ as $$
            ts_rank(x.search_vector, (select tsq from t))
     from public.prompts x
     where x.user_id = auth.uid()
+      and (include_hidden or x.hidden = false)
       and (x.search_vector @@ (select tsq from t)
            or x.title ilike '%' || (select term from s) || '%'
            or coalesce(x.prompt_content, '') ilike '%' || (select term from s) || '%'
@@ -843,8 +863,8 @@ $$;
 -- 10. HAK AKSES FUNGSI
 -- ============================================================================
 
-revoke all on function public.search_all(text, int) from anon;
-grant execute on function public.search_all(text, int) to authenticated;
+revoke all on function public.search_all(text, int, boolean) from anon;
+grant execute on function public.search_all(text, int, boolean) to authenticated;
 grant execute on function public.seed_demo_data() to authenticated;
 grant execute on function public.delete_demo_data() to authenticated;
 
