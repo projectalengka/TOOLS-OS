@@ -10,6 +10,7 @@ import { confirmDialog, esc, formatDateTime, icon, openModal, showError, toast }
 import { bootPage, setBusy } from '../boot';
 import { RESOURCES, RESOURCE_LIST } from '../resources';
 import { renderVaultSection } from '../vault-ui';
+import { refreshIdentity } from '../shell';
 import type { BackupPayload } from '../types';
 
 const THEMES: { value: ThemePref; label: string; iconName: string }[] = [
@@ -264,8 +265,10 @@ export async function initSettingsPage(): Promise<void> {
       setBusy(saveProfile, true, 'Menyimpan…');
       try {
         await db.updateProfile({ full_name: nameInput.value.trim() });
-        toast('Profil berhasil disimpan.');
         await renderProfile();
+        // Sidebar harus ikut berubah tanpa perlu muat ulang halaman.
+        await refreshIdentity();
+        toast('Profil berhasil disimpan.');
       } catch (error) {
         showError(error, 'Gagal menyimpan profil.');
       } finally {

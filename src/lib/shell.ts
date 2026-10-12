@@ -95,11 +95,31 @@ async function initIdentity(): Promise<void> {
       ? 'Data disimpan di perangkat ini (localStorage + IndexedDB)'
       : 'Data disimpan di Supabase (PostgreSQL + Storage)';
   }
+  await refreshIdentity();
+}
 
+/**
+ * Menampilkan nama dan email pengguna di sidebar.
+ *
+ * Nama diambil dari tabel `profiles`, bukan dari sesi auth. Di mode Supabase,
+ * `updateProfile` menulis ke tabel `profiles` sedangkan `user_metadata` tidak
+ * ikut berubah — kalau membaca dari sesi, nama di sidebar tidak akan pernah
+ * ikut berubah setelah pengguna menyimpan profilnya. Sesi hanya dipakai sebagai
+ * cadangan kalau profil belum ada.
+ */
+export async function refreshIdentity(): Promise<void> {
   const session = await currentSession();
   if (!session) return;
 
-  const name = session.name || session.email || 'Pengguna';
+  let name = session.name || '';
+  try {
+    const profile = await db.getProfile();
+    if (profile?.name) name = profile.name;
+  } catch {
+    /* pakai nama dari sesi kalau profil tidak bisa dibaca */
+  }
+  name = name || session.email || 'Pengguna';
+
   const nameEl = document.getElementById('user-name');
   const emailEl = document.getElementById('user-email');
   const avatarEl = document.getElementById('user-avatar');
