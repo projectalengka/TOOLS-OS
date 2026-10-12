@@ -13,3 +13,7 @@ dist/
 
 .vercel
 .env*
+
+# Dokumentasi internal — sengaja tidak ikut ke repo publik
+README.md
+DEPLOY.md

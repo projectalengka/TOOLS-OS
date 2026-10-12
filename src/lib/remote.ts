@@ -6,7 +6,7 @@
  * user_id = auth.uid(). Frontend tidak dipakai sebagai lapisan keamanan.
  */
 
-import { getSupabaseClient } from './supabase';
+import { getSupabaseClient, supabaseAnonKey, supabaseUrl } from './supabase';
 import type {
   ActivityLog, BackupPayload, ListOptions, PromptVersion, ResourceMap,
   ResourceName, SearchHit, Secret, Session, Tag, TagItemType, VaultMeta,
@@ -107,6 +107,26 @@ export const remoteAdapter = {
       redirectTo: `${window.location.origin}/masuk`,
     });
     if (result.error) throw new Error(friendly(result.error.message, 'Gagal mengirim email reset password.'));
+  },
+
+  /**
+   * Apakah pendaftaran akun baru terbuka?
+   *
+   * Dibaca dari endpoint publik Supabase Auth, jadi UI bisa menyesuaikan diri:
+   * kalau pemilik aplikasi menutup pendaftaran, tab "Daftar" hilang sendiri
+   * dan tidak ada jalan buntu bagi pengunjung.
+   */
+  async isSignupEnabled(): Promise<boolean> {
+    try {
+      const response = await fetch(`${supabaseUrl}/auth/v1/settings`, {
+        headers: { apikey: supabaseAnonKey },
+      });
+      if (!response.ok) return true;
+      const settings = (await response.json()) as { disable_signup?: boolean };
+      return settings.disable_signup !== true;
+    } catch {
+      return true;
+    }
   },
 
   async wipeAll(): Promise<void> {

@@ -283,6 +283,11 @@ export const localAdapter = {
     throw new Error('Mode Lokal tidak memakai password, jadi tidak ada yang perlu direset.');
   },
 
+  /** Mode Lokal tidak punya pendaftaran, jadi tidak ada yang perlu ditutup. */
+  async isSignupEnabled(): Promise<boolean> {
+    return true;
+  },
+
   async onAuthChange(_callback?: (session: Session | null) => void): Promise<() => void> {
     return () => {};
   },

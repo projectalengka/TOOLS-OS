@@ -13,6 +13,12 @@ import { bootPage, setBusy } from '../boot';
 type AuthMode = 'signin' | 'signup';
 
 let mode: AuthMode = 'signin';
+/**
+ * Apakah pendaftaran akun baru terbuka. Kalau pemilik aplikasi menutupnya
+ * (disable_signup di Supabase), tab "Daftar" disembunyikan supaya pengunjung
+ * tidak menemui jalan buntu.
+ */
+let signupEnabled = true;
 
 function nextUrl(): string {
   const params = new URLSearchParams(window.location.search);
@@ -40,6 +46,18 @@ function applyMode(): void {
     if (title) title.textContent = 'Mulai gunakan PERSONAL OS';
     if (subtitle) subtitle.textContent = 'Data disimpan di perangkat ini saja. Tidak perlu password.';
     if (submit) submit.innerHTML = `${icon('arrowRight', 16)}<span>Mulai</span>`;
+    return;
+  }
+
+  // Aplikasi privat: pendaftaran ditutup, jadi hanya form masuk yang ditampilkan.
+  if (!signupEnabled) {
+    if (tabs) tabs.hidden = true;
+    if (nameField) nameField.hidden = true;
+    if (passwordField) passwordField.hidden = false;
+    if (forgot) forgot.hidden = false;
+    if (title) title.textContent = 'Masuk';
+    if (subtitle) subtitle.textContent = 'Aplikasi ini privat. Hanya pemiliknya yang bisa masuk.';
+    if (submit) submit.innerHTML = `${icon('arrowRight', 16)}<span>Masuk</span>`;
     return;
   }
 
@@ -86,6 +104,16 @@ export async function initLoginPage(): Promise<void> {
           : '<strong>Privasi.</strong> Setiap baris data dilindungi Row Level Security, jadi hanya akunmu yang bisa membacanya.';
       }
 
+      // Cek dulu apakah pendaftaran terbuka, baru gambar tampilannya.
+      if (!isLocalMode) {
+        try {
+          signupEnabled = await db.isSignupEnabled();
+        } catch {
+          signupEnabled = true;
+        }
+        if (!signupEnabled) mode = 'signin';
+      }
+
       applyMode();
 
       tabs?.addEventListener('click', (event) => {
@@ -115,6 +143,12 @@ export async function initLoginPage(): Promise<void> {
         }
         if (!isLocalMode && password.length < 6) {
           showFormError('Password minimal 6 karakter.');
+          return;
+        }
+        // Penjaga tambahan: pendaftaran tertutup tidak boleh bisa ditembus
+        // walaupun seseorang menyunting DOM dan memaksa mode 'signup'.
+        if (!isLocalMode && mode === 'signup' && !signupEnabled) {
+          showFormError('Pendaftaran akun baru ditutup oleh pemilik aplikasi.');
           return;
         }
 
@@ -179,7 +213,9 @@ export async function initLoginPage(): Promise<void> {
       if (!isLocalMode) {
         const hint = document.getElementById('auth-hint');
         if (hint) {
-          hint.innerHTML = `Belum punya akun? Klik <strong>Daftar</strong>. Kalau tabel database belum ada, jalankan <code>supabase/schema.sql</code> lebih dulu — lihat <code>README.md</code>.`;
+          hint.innerHTML = signupEnabled
+            ? 'Belum punya akun? Klik <strong>Daftar</strong>.'
+            : 'Pendaftaran akun baru ditutup oleh pemilik aplikasi. Kalau ini aplikasimu, masuk memakai akun yang sudah terdaftar.';
           hint.hidden = false;
         }
       }
