@@ -353,3 +353,31 @@ export const RESOURCE_LIST: readonly ResourceDef[] = [
 export function resourceByRoute(route: string): ResourceDef | undefined {
   return RESOURCE_LIST.find((r) => r.route === route);
 }
+
+/* ------------------------------------------------- deteksi duplikat */
+
+/** Nama kolom yang dipakai sebagai judul resource. */
+export function titleFieldOf(resource: ResourceName): string {
+  return resource === 'projects' ? 'name' : 'title';
+}
+
+function cleanKey(value: unknown): string {
+  return String(value ?? '').trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+/**
+ * Kunci pembanding untuk mendeteksi duplikat.
+ *
+ * Mengembalikan string kosong kalau resource ini tidak perlu diperiksa.
+ * Khusus Accounts: dua akun dengan layanan sama itu wajar (tiga akun Google
+ * itu normal), jadi yang dianggap duplikat adalah layanan DAN email yang sama.
+ * Kalau emailnya kosong, tidak diperiksa sama sekali supaya tidak salah tuduh.
+ */
+export function duplicateKey(resource: ResourceName, row: Record<string, unknown>): string {
+  if (resource === 'accounts') {
+    const email = cleanKey(row.email);
+    if (!email) return '';
+    return `${cleanKey(row.service)}|${email}`;
+  }
+  return cleanKey(row[titleFieldOf(resource)]);
+}

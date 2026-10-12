@@ -1,0 +1,43 @@
+---
+/**
+ * Navigasi bawah khusus layar kecil.
+ *
+ * Di HP, drawer (menu geser dari kiri) terasa jauh dari jempol: harus ketuk
+ * tombol menu, tunggu animasi, baru pilih. Bilah ini menaruh empat tujuan yang
+ * paling sering dipakai langsung di jangkauan jempol, plus "Lainnya" untuk
+ * membuka drawer berisi menu lengkap.
+ *
+ * Hanya tampil di layar ≤1024px — di desktop sidebar sudah cukup.
+ */
+import { icon } from '../lib/ui';
+
+const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
+
+const items = [
+  { href: '/', label: 'Beranda', iconName: 'dashboard' },
+  { href: '/cari', label: 'Cari', iconName: 'search' },
+  { href: '/prompt', label: 'Prompt', iconName: 'sparkles' },
+  { href: '/project', label: 'Project', iconName: 'folder' },
+];
+
+function isActive(href: string): boolean {
+  if (href === '/') return path === '/';
+  if (href === '/project') return path === '/project' || path.startsWith('/project/');
+  return path === href;
+}
+---
+
+<nav class="mobile-nav" aria-label="Navigasi cepat">
+  {
+    items.map((item) => (
+      <a class:list={['mobile-nav-item', { 'is-active': isActive(item.href) }]} href={item.href}>
+        <Fragment set:html={icon(item.iconName, 21)} />
+        <span>{item.label}</span>
+      </a>
+    ))
+  }
+  <button type="button" class="mobile-nav-item" id="mobile-nav-more" aria-label="Buka menu lengkap">
+    <Fragment set:html={icon('menu', 21)} />
+    <span>Lainnya</span>
+  </button>
+</nav>

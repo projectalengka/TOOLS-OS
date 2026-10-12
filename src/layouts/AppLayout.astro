@@ -8,6 +8,7 @@ import '../styles/global.css';
 import Sidebar from '../components/Sidebar.astro';
 import TopBar from '../components/TopBar.astro';
 import CommandPalette from '../components/CommandPalette.astro';
+import MobileNav from '../components/MobileNav.astro';
 import { icon } from '../lib/ui';
 import { isSupabaseConfigured } from '../lib/supabase';
 
@@ -76,6 +77,7 @@ const showStorageBanner = import.meta.env.PROD && !isSupabaseConfigured;
       </div>
     </div>
 
+    <MobileNav />
     <CommandPalette />
 
     <script>

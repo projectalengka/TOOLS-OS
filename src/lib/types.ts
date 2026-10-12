@@ -238,6 +238,12 @@ export function isHideable(resource: string): boolean {
   return (HIDEABLE_RESOURCES as readonly string[]).includes(resource);
 }
 
+/** Hasil pencarian data yang mirip, dipakai untuk mencegah duplikat. */
+export interface SimilarItem {
+  id: UUID;
+  title: string;
+}
+
 export type BackupPayload = {
   app: 'PERSONAL OS';
   version: number;

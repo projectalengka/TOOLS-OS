@@ -15,8 +15,8 @@ import type {
   ActivityLog, BackupPayload, ListOptions, PromptVersion, ResourceMap,
   ResourceName, SearchHit, Secret, Session, Tag, TagItemType, TagRelation, VaultMeta,
 } from './types';
-import { RESOURCES, label } from './resources';
-import { isHideable } from './types';
+import { RESOURCES, label, duplicateKey, titleFieldOf } from './resources';
+import { isHideable, type SimilarItem } from './types';
 import * as idb from './idb';
 
 type Row = Record<string, unknown>;
@@ -350,6 +350,28 @@ export const localAdapter = {
     const db = readDb();
     const found = coll(db, resource).find((r) => str(r.id) === id);
     return (found as unknown as ResourceMap[R]) ?? null;
+  },
+
+  /**
+   * Mencari data yang dianggap sama, untuk mencegah duplikat.
+   * Membandingkan kunci yang sudah dinormalkan (huruf kecil, spasi dirapikan),
+   * jadi "Prompt Audit" dan "prompt  audit" terdeteksi sama.
+   */
+  async findSimilar(
+    resource: ResourceName,
+    candidate: Record<string, unknown>,
+    excludeId?: string,
+  ): Promise<SimilarItem | null> {
+    const key = duplicateKey(resource, candidate);
+    if (!key) return null;
+    const db = readDb();
+    const field = titleFieldOf(resource);
+    for (const row of coll(db, resource)) {
+      if (excludeId && str(row.id) === excludeId) continue;
+      if (duplicateKey(resource, row) !== key) continue;
+      return { id: str(row.id), title: str(row[field]) || str(row.service) || '' };
+    }
+    return null;
   },
 
   async create<R extends ResourceName>(

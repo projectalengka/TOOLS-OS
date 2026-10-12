@@ -12,33 +12,41 @@ import type { SearchHit } from './types';
 
 /* --------------------------------------------------------------- drawer */
 
+/**
+ * Buka/tutup drawer navigasi. Dipakai dua tempat: tombol menu di topbar, dan
+ * tombol "Lainnya" di navigasi bawah HP.
+ */
+function openDrawer(): void {
+  document.body.classList.add('drawer-open');
+  document.getElementById('menu-button')?.setAttribute('aria-expanded', 'true');
+}
+
+function closeDrawer(): void {
+  document.body.classList.remove('drawer-open');
+  document.getElementById('menu-button')?.setAttribute('aria-expanded', 'false');
+}
+
 function initDrawer(): void {
   const button = document.getElementById('menu-button');
   const scrim = document.getElementById('sidebar-scrim');
   const sidebar = document.getElementById('sidebar');
 
-  const close = () => {
-    document.body.classList.remove('drawer-open');
-    button?.setAttribute('aria-expanded', 'false');
-  };
-  const open = () => {
-    document.body.classList.add('drawer-open');
-    button?.setAttribute('aria-expanded', 'true');
-  };
-
   button?.addEventListener('click', () => {
-    if (document.body.classList.contains('drawer-open')) close();
-    else open();
+    if (document.body.classList.contains('drawer-open')) closeDrawer();
+    else openDrawer();
   });
-  scrim?.addEventListener('click', close);
+
+  document.getElementById('mobile-nav-more')?.addEventListener('click', openDrawer);
+
+  scrim?.addEventListener('click', closeDrawer);
   sidebar?.addEventListener('click', (event) => {
-    if ((event.target as HTMLElement).closest('a')) close();
+    if ((event.target as HTMLElement).closest('a')) closeDrawer();
   });
   window.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && document.body.classList.contains('drawer-open')) close();
+    if (event.key === 'Escape' && document.body.classList.contains('drawer-open')) closeDrawer();
   });
   window.addEventListener('resize', () => {
-    if (window.innerWidth > 1024) close();
+    if (window.innerWidth > 1024) closeDrawer();
   });
 }
 

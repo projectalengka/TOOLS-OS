@@ -9,9 +9,10 @@
 import { getSupabaseClient, supabaseAnonKey, supabaseUrl } from './supabase';
 import type {
   ActivityLog, BackupPayload, ListOptions, PromptVersion, ResourceMap,
-  ResourceName, SearchHit, Secret, Session, Tag, TagItemType, VaultMeta,
+  ResourceName, SearchHit, Secret, Session, SimilarItem, Tag, TagItemType, VaultMeta,
 } from './types';
 import { isHideable } from './types';
+import { duplicateKey, titleFieldOf } from './resources';
 import { RESOURCES } from './resources';
 
 const BUCKET = 'documents';
@@ -208,6 +209,42 @@ export const remoteAdapter = {
     const result = await (await getSupabaseClient()).from(resource).select('*').eq('id', id).maybeSingle();
     if (result.error) throw new Error(friendly(result.error.message, 'Gagal memuat data.'));
     return (result.data as unknown as ResourceMap[R]) ?? null;
+  },
+
+  /**
+   * Mencari data yang dianggap sama, untuk mencegah duplikat.
+   *
+   * Judulnya dibandingkan di sisi klien, bukan lewat `ilike` di database:
+   * karakter `%` dan `_` di judul akan diperlakukan sebagai wildcard oleh
+   * PostgREST, dan pencocokan di klien juga membuat aturannya persis sama
+   * dengan Mode Lokal.
+   */
+  async findSimilar(
+    resource: ResourceName,
+    candidate: Record<string, unknown>,
+    excludeId?: string,
+  ): Promise<SimilarItem | null> {
+    const key = duplicateKey(resource, candidate);
+    if (!key) return null;
+    const session = await this.getSession();
+    if (!session) return null;
+
+    const field = titleFieldOf(resource);
+    const columns = resource === 'accounts' ? 'id, service, email' : `id, ${field}`;
+    let query = (await getSupabaseClient())
+      .from(resource)
+      .select(columns)
+      .eq('user_id', session.userId)
+      .limit(1000);
+    if (excludeId) query = query.neq('id', excludeId);
+
+    const result = await query;
+    if (result.error) return null;
+
+    const rows = (result.data ?? []) as unknown as Record<string, unknown>[];
+    const hit = rows.find((row) => duplicateKey(resource, row) === key);
+    if (!hit) return null;
+    return { id: String(hit.id), title: String(hit[field] ?? hit.service ?? '') };
   },
 
   async create<R extends ResourceName>(resource: R, payload: Partial<ResourceMap[R]>): Promise<ResourceMap[R]> {

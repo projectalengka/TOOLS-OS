@@ -16,7 +16,7 @@ import {
   confirmDialog, esc, formatRelative, icon, openModal, showError, toast,
 } from './ui';
 import { setBusy } from './boot';
-import type { Account, ResourceName, Tag } from './types';
+import type { Account, ResourceName, SimilarItem, Tag } from './types';
 
 type Row = Record<string, unknown>;
 
@@ -34,6 +34,57 @@ export interface ActionContext {
 
 function text(value: unknown): string {
   return typeof value === 'string' ? value : value == null ? '' : String(value);
+}
+
+/* --------------------------------------------------- cegah duplikat */
+
+/**
+ * Menanyakan apa yang harus dilakukan kalau judulnya sudah dipakai.
+ *
+ * Sengaja TIDAK langsung menolak: menyalin data yang sudah ada untuk dijadikan
+ * variasi itu wajar, dan yang dibutuhkan cuma peringatan supaya tidak ada dua
+ * data dengan isi yang sama tanpa disadari.
+ */
+function askDuplicate(resource: ResourceName, existing: SimilarItem): Promise<'open' | 'create' | 'cancel'> {
+  return new Promise((resolve) => {
+    const body = document.createElement('div');
+    body.innerHTML = `
+      <p class="modal-text">Sudah ada ${esc(RESOURCES[resource].singular)} dengan judul yang sama:</p>
+      <p class="duplicate-title">${esc(existing.title)}</p>
+      <p class="page-sub">Kalau diteruskan, akan ada dua data dengan judul sama.</p>`;
+
+    const footer = document.createElement('div');
+    footer.className = 'modal-actions';
+    footer.innerHTML = `
+      <button type="button" class="btn btn-ghost" data-choice="cancel">Batal</button>
+      <button type="button" class="btn btn-outline" data-choice="create">Tetap simpan</button>
+      <button type="button" class="btn btn-primary" data-choice="open">Buka yang ada</button>`;
+
+    let answered = false;
+    const answer = (choice: 'open' | 'create' | 'cancel') => {
+      if (answered) return;
+      answered = true;
+      resolve(choice);
+    };
+
+    const handle = openModal({
+      title: 'Judul ini sudah dipakai',
+      subtitle: 'Mungkin ini data yang sama?',
+      body,
+      footer,
+      size: 'sm',
+      // Escape atau klik di luar dianggap batal, supaya penyimpanan tidak
+      // menggantung menunggu jawaban yang tidak pernah datang.
+      onClose: () => answer('cancel'),
+    });
+
+    footer.querySelectorAll<HTMLElement>('[data-choice]').forEach((button) => {
+      button.addEventListener('click', () => {
+        answer((button.dataset.choice as 'open' | 'create' | 'cancel') ?? 'cancel');
+        handle.close();
+      });
+    });
+  });
 }
 
 /* ------------------------------------------------------- form buat/ubah */
@@ -125,6 +176,32 @@ export async function openFormModal(
     const filledSecrets = Object.entries(result.secrets)
       .map(([key, value]) => [key, typeof value === 'string' ? value : ''] as const)
       .filter(([, value]) => value.trim().length > 0);
+
+    // Cegah duplikat. Diperiksa lebih dulu sebelum gerbang vault, supaya
+    // pengguna tidak diminta master password untuk data yang ternyata sudah ada.
+    try {
+      const candidate = { ...(result.values as Record<string, unknown>) };
+      const similar = await db.findSimilar(resource, candidate, id);
+      if (similar) {
+        const choice = await askDuplicate(resource, similar);
+        if (choice === 'cancel') return;
+        if (choice === 'open') {
+          handle.close();
+          await openDetailModal(resource, similar.id, {
+            onChange: options.onSaved,
+            onEdit: () =>
+              void openFormModal(resource, {
+                id: similar.id,
+                projects: options.projects,
+                onSaved: options.onSaved,
+              }),
+          });
+          return;
+        }
+      }
+    } catch {
+      // Kalau pemeriksaan gagal (mis. jaringan), jangan halangi penyimpanan.
+    }
 
     // Vault harus terbuka SEBELUM apa pun disimpan. Kalau pengguna membatalkan,
     // penyimpanan dibatalkan seluruhnya supaya password yang sudah diketik tidak
