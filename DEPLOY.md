@@ -103,60 +103,73 @@ Bucket sudah dibuat otomatis oleh `schema.sql`. Tidak ada yang perlu dilakukan.
 
 ---
 
-## Langkah 2 — GitHub (kode)
+## Langkah 2 — GitHub (kode) ✅ SUDAH SELESAI
 
-### 2.1 Buat repository kosong
+Kode sudah dikirim ke **<https://github.com/projectalengka/TOOLS-OS>**
+(branch `main`, 2 commit, 59 berkas). **Langkah ini tidak perlu diulang** —
+langsung ke Langkah 3.
 
-1. Buka [github.com/new](https://github.com/new).
-2. Isi:
-   - **Repository name**: `personal-os`
-   - **Visibility**: pilih **Private** (aplikasi pribadi — biarkan privat)
-   - **JANGAN centang** "Add a README file", "Add .gitignore", atau "Choose a license"
-     (repo ini sudah punya semuanya; centang salah satu justru membuat konflik)
-3. Klik **Create repository**.
-4. Halaman berikutnya menampilkan perintah-perintah. **Biarkan halaman ini terbuka.**
+Yang ikut terkirim: kode aplikasi, `schema.sql`, `README.md`, `DEPLOY.md`.
+Yang **tidak** ikut: `node_modules`, `dist`, `.env`, dan catatan kerja asisten.
+Sudah diverifikasi dengan `git ls-tree -r origin/main`.
 
-### 2.2 Kirim kode dari komputer
+> ### ⚠️ Repo ini PUBLIK
+>
+> Siapa pun bisa membaca kode ini. Tidak ada kredensial yang bocor di dalamnya —
+> sudah diperiksa, tidak ada `.env`, JWT, `service_role`, atau URL project
+> Supabase. Jadi ini **bukan masalah keamanan**, hanya soal privasi kode.
+>
+> Kalau ingin dijadikan privat: buka
+> `github.com/projectalengka/TOOLS-OS/settings` → gulir ke paling bawah →
+> **Danger Zone** → **Change repository visibility** → **Make private**.
+> Vercel tetap bisa deploy dari repo privat, jadi tidak ada yang perlu diubah
+> setelahnya.
 
-Buka terminal di folder project, lalu jalankan (ganti `USERNAME` dengan nama
-pengguna GitHub kamu):
+### Kalau nanti ada perubahan kode
 
 ```bash
-git remote add origin https://github.com/USERNAME/personal-os.git
+git add -A
+git commit -m "Perubahan saya"
+git push
+```
+
+Vercel akan otomatis build dan menayangkan versi baru. Tidak perlu deploy manual.
+
+---
+
+## Langkah 2b — Kalau perlu membuat repo baru dari nol
+
+*Bagian ini hanya untuk referensi. Repo kamu sudah ada, jadi tidak perlu dijalankan.*
+
+1. Buka [github.com/new](https://github.com/new).
+2. Isi **Repository name**: `TOOLS-OS`, pilih **Private**.
+3. **JANGAN centang** "Add a README file", ".gitignore", atau "license" — repo ini
+   sudah punya semuanya; mencentang salah satu justru membuat konflik saat push.
+4. Klik **Create repository**, lalu di terminal folder project:
+
+```bash
+git remote add origin https://github.com/projectalengka/TOOLS-OS.git
 git branch -M main
 git push -u origin main
 ```
 
-Commit pertama sudah dibuat, jadi tinggal dikirim.
+Saat `git push` dijalankan pertama kali, akan muncul jendela login GitHub.
+Pilih **Sign in with your browser** dan izinkan. Sekali saja.
 
-**Saat menjalankan `git push`**, akan muncul jendela login GitHub. Pilih
-**Sign in with your browser**, lalu izinkan. Ini sekali saja — setelah itu
-Git tidak akan bertanya lagi.
+> Kalau yang muncul justru permintaan password di terminal: GitHub **tidak
+> menerima password akun**. Buat **Personal Access Token** di
+> *Settings → Developer settings → Personal access tokens → Tokens (classic)*,
+> centang scope **repo**, lalu pakai token itu sebagai password.
 
-> Kalau muncul permintaan password di terminal dan bukan jendela browser,
-> GitHub **tidak menerima password akun**. Buat **Personal Access Token**:
-> GitHub → foto profil → *Settings* → *Developer settings* →
-> *Personal access tokens* → *Tokens (classic)* → *Generate new token (classic)* →
-> centang scope **repo** → *Generate*. Pakai token itu sebagai password.
-
-### 2.3 Pastikan tidak ada yang sensitif ikut terkirim
-
-Jalankan:
-
-```bash
-git ls-files | grep -E "\.env$|node_modules|dist/"
-```
-
-Hasilnya harus **kosong**. Kalau ada yang muncul, jangan lanjut — beri tahu saya.
 
 ---
 
-## Langkah 3 — Vercel (hosting)
+## Langkah 3 — Vercel (hosting) ← **MULAI DARI SINI**
 
 ### 3.1 Import project
 
 1. Buka [vercel.com/new](https://vercel.com/new).
-2. Di bagian **Import Git Repository**, cari `personal-os`, klik **Import**.
+2. Di bagian **Import Git Repository**, cari **`TOOLS-OS`**, klik **Import**.
    - Kalau repo tidak muncul, klik **Adjust GitHub App Permissions** dan beri izin
      akses ke repo tersebut.
 3. Vercel akan mendeteksi **Framework Preset: Astro** secara otomatis.
@@ -260,6 +273,7 @@ tidak bisa dikembalikan, jadi siapkan daftar akunmu untuk diisi ulang.
 
 Setelah semua selesai, pastikan ini tercentang:
 
+- [x] ~~Kode sudah ada di GitHub~~ — **selesai**: `github.com/projectalengka/TOOLS-OS`
 - [ ] `schema.sql` sudah dijalankan di Supabase sampai **Success**
 - [ ] Provider **Email** aktif di Supabase
 - [ ] **Site URL** dan **Redirect URL** sudah diisi alamat Vercel
@@ -270,7 +284,7 @@ Setelah semua selesai, pastikan ini tercentang:
 - [ ] Bisa **Daftar** dan **Masuk**
 - [ ] Data yang dibuat di HP muncul juga di komputer (bukti tersinkron)
 - [ ] Master password vault sudah dicatat di tempat aman
-- [ ] Repo GitHub berstatus **Private**
+- [ ] Repo GitHub dijadikan **Private** (kalau mau)
 
 ---
 
